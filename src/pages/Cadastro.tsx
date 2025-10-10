@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Navbar } from "@/components/Navbar";
 import { toast } from "sonner";
 import prorafLogo from "@/assets/proraf-logo.png";
+import cadastroBg from "@/assets/cadastro-bg.jpg";
 
 const Cadastro = () => {
   const navigate = useNavigate();
@@ -35,9 +36,16 @@ const Cadastro = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 py-12 flex items-center justify-center">
+    <div className="min-h-screen relative">
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${cadastroBg})` }}
+      >
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm"></div>
+      </div>
+      <div className="relative z-10">
+        <Navbar />
+        <div className="container mx-auto px-4 py-12 flex items-center justify-center">
         <Card className="w-full max-w-md shadow-soft">
           <CardHeader className="text-center">
             <img src={prorafLogo} alt="ProRAF" className="h-16 mx-auto mb-4" />
@@ -144,6 +152,7 @@ const Cadastro = () => {
             </form>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );

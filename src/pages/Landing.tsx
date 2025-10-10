@@ -8,6 +8,9 @@ import unipampaLogo from "@/assets/unipampa-logo.png";
 import alegreteLogo from "@/assets/alegrete-logo.png";
 import lamapLogo from "@/assets/lamap-logo.png";
 import leaLogo from "@/assets/lea-logo.png";
+import heroBg from "@/assets/hero-bg.jpg";
+import featuresBg from "@/assets/features-bg.png";
+import ctaBg from "@/assets/cta-bg.jpeg";
 
 const Landing = () => {
   return (
@@ -16,8 +19,13 @@ const Landing = () => {
       
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-hero opacity-10 animate-pulse"></div>
-        <div className="container mx-auto px-4 py-20 md:py-32 relative">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroBg})` }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/80 to-background"></div>
+        </div>
+        <div className="container mx-auto px-4 py-20 md:py-32 relative z-10">
           <div className="max-w-3xl mx-auto text-center animate-fade-in">
             <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 animate-slide-in">
               Rastreabilidade Agrícola Completa
@@ -43,8 +51,13 @@ const Landing = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-card">
-        <div className="container mx-auto px-4">
+      <section className="py-20 relative">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
+          style={{ backgroundImage: `url(${featuresBg})` }}
+        ></div>
+        <div className="absolute inset-0 bg-card/95"></div>
+        <div className="container mx-auto px-4 relative z-10">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 animate-fade-in">
             Funcionalidades Principais
           </h2>
@@ -127,18 +140,24 @@ const Landing = () => {
       {/* CTA Section */}
       <section className="py-20">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center bg-gradient-hero rounded-2xl p-12 shadow-soft hover:shadow-lg transition-shadow animate-fade-in">
+          <div 
+            className="max-w-3xl mx-auto text-center rounded-2xl p-12 shadow-soft hover:shadow-lg transition-shadow animate-fade-in relative overflow-hidden"
+            style={{ backgroundImage: `url(${ctaBg})` }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-secondary/80 to-primary/90"></div>
+            <div className="relative z-10">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 animate-slide-in">
               Pronto para começar?
             </h2>
             <p className="text-white/90 text-lg mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
               Junte-se a centenas de produtores que já usam o ProRAF para gerenciar sua produção.
             </p>
-            <Link to="/cadastro">
-              <Button size="lg" variant="secondary" className="hover-scale animate-fade-in" style={{ animationDelay: "0.4s" }}>
-                Criar Conta Gratuita
-              </Button>
-            </Link>
+              <Link to="/cadastro">
+                <Button size="lg" variant="secondary" className="hover-scale animate-fade-in" style={{ animationDelay: "0.4s" }}>
+                  Criar Conta Gratuita
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>

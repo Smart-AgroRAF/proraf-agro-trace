@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Navbar } from "@/components/Navbar";
 import { toast } from "sonner";
 import prorafLogo from "@/assets/proraf-logo.png";
+import loginBg from "@/assets/login-bg.jpg";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -32,9 +33,16 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 py-12 flex items-center justify-center min-h-[calc(100vh-4rem)]">
+    <div className="min-h-screen relative">
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${loginBg})` }}
+      >
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm"></div>
+      </div>
+      <div className="relative z-10">
+        <Navbar />
+        <div className="container mx-auto px-4 py-12 flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <Card className="w-full max-w-md shadow-soft">
           <CardHeader className="text-center">
             <img src={prorafLogo} alt="ProRAF" className="h-16 mx-auto mb-4" />
@@ -77,6 +85,7 @@ const Login = () => {
             </form>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );

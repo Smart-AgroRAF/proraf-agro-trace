@@ -20,7 +20,7 @@ const Landing = () => {
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${heroBg})` }}>
-          <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/80 to-background"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/50 to-background"></div>
         </div>
         <div className="container mx-auto px-4 py-20 md:py-32 relative z-10">
           <div className="max-w-3xl mx-auto text-center animate-fade-in">
@@ -53,10 +53,10 @@ const Landing = () => {
       {/* Features Section */}
       <section className="py-20 relative">
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
           style={{ backgroundImage: `url(${featuresBg})` }}
         ></div>
-        <div className="absolute inset-0 bg-card/95"></div>
+        <div className="absolute inset-0 bg-card/80"></div>
         <div className="container mx-auto px-4 relative z-10">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 animate-fade-in">
             Funcionalidades Principais
@@ -118,7 +118,8 @@ const Landing = () => {
           <p className="text-center text-muted-foreground mb-12 animate-fade-in" style={{ animationDelay: "0.1s" }}>
             Desenvolvido em parceria com instituições de excelência
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center">
+          <div className="grid grid-cols-3 gap-8 max-w-4xl mx-auto">
+            {/* Primeira linha: Unipampa, LAMAP, PampaTec */}
             <div
               className="flex items-center justify-center p-4 hover:scale-110 transition-transform duration-300 animate-fade-in"
               style={{ animationDelay: "0.1s" }}
@@ -133,29 +134,31 @@ const Landing = () => {
               className="flex items-center justify-center p-4 hover:scale-110 transition-transform duration-300 animate-fade-in"
               style={{ animationDelay: "0.2s" }}
             >
+              <img src={lamapLogo} alt="LAMAP" className="max-h-20 w-auto grayscale hover:grayscale-0 transition-all" />
+            </div>
+            <div
+              className="flex items-center justify-center p-4 hover:scale-110 transition-transform duration-300 animate-fade-in"
+              style={{ animationDelay: "0.3s" }}
+            >
               <img
                 src={pampatecLogo}
                 alt="PampaTec"
                 className="max-h-20 w-auto grayscale hover:grayscale-0 transition-all"
               />
             </div>
-            <div
-              className="flex items-center justify-center p-4 hover:scale-110 transition-transform duration-300 animate-fade-in"
-              style={{ animationDelay: "0.3s" }}
-            >
-              <img src={ppgesLogo} alt="PPGES" className="max-h-20 w-auto grayscale hover:grayscale-0 transition-all" />
-            </div>
+            
+            {/* Segunda linha: LEA, PPGES, Alegrete */}
             <div
               className="flex items-center justify-center p-4 hover:scale-110 transition-transform duration-300 animate-fade-in"
               style={{ animationDelay: "0.4s" }}
             >
-              <img src={lamapLogo} alt="LAMAP" className="max-h-20 w-auto grayscale hover:grayscale-0 transition-all" />
+              <img src={leaLogo} alt="LEA" className="max-h-20 w-auto grayscale hover:grayscale-0 transition-all" />
             </div>
             <div
               className="flex items-center justify-center p-4 hover:scale-110 transition-transform duration-300 animate-fade-in"
               style={{ animationDelay: "0.5s" }}
             >
-              <img src={leaLogo} alt="LEA" className="max-h-20 w-auto grayscale hover:grayscale-0 transition-all" />
+              <img src={ppgesLogo} alt="PPGES" className="max-h-20 w-auto grayscale hover:grayscale-0 transition-all" />
             </div>
             <div
               className="flex items-center justify-center p-4 hover:scale-110 transition-transform duration-300 animate-fade-in"
@@ -178,7 +181,7 @@ const Landing = () => {
             className="max-w-3xl mx-auto text-center rounded-2xl p-12 shadow-soft hover:shadow-lg transition-shadow animate-fade-in relative overflow-hidden"
             style={{ backgroundImage: `url(${ctaBg})` }}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-secondary/80 to-primary/90"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/70 via-secondary/60 to-primary/70"></div>
             <div className="relative z-10">
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 animate-slide-in">Pronto para começar?</h2>
               <p className="text-white/90 text-lg mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>

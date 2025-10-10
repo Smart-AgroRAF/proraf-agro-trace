@@ -41,6 +41,9 @@ export const Navbar = ({ isAuthenticated = false }: NavbarProps) => {
                 <Link to="/movimentacoes" className="text-foreground hover:text-primary transition-colors">
                   Movimentações
                 </Link>
+                <Link to="/perfil" className="text-foreground hover:text-primary transition-colors">
+                  Perfil
+                </Link>
                 <Button onClick={handleLogout} variant="outline" size="sm">
                   <LogOut className="h-4 w-4 mr-2" />
                   Sair
@@ -102,6 +105,13 @@ export const Navbar = ({ isAuthenticated = false }: NavbarProps) => {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Movimentações
+                </Link>
+                <Link
+                  to="/perfil"
+                  className="text-foreground hover:text-primary transition-colors py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Perfil
                 </Link>
                 <Button onClick={handleLogout} variant="outline" size="sm" className="w-full mt-2">
                   <LogOut className="h-4 w-4 mr-2" />

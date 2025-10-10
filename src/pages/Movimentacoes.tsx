@@ -128,9 +128,11 @@ const Movimentacoes = () => {
                         {new Date(mov.data).toLocaleDateString("pt-BR")}
                       </p>
                     </div>
-                    <Button variant="outline" size="sm">
-                      Detalhes
-                    </Button>
+                    <Link to={`/movimentacoes/${mov.id}`}>
+                      <Button variant="outline" size="sm">
+                        Detalhes
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </CardContent>

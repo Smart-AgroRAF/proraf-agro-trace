@@ -108,9 +108,11 @@ const Produtos = () => {
                   <span className="text-xs font-mono bg-muted px-2 py-1 rounded">
                     {produto.code}
                   </span>
-                  <Button variant="outline" size="sm">
-                    Ver Detalhes
-                  </Button>
+                  <Link to={`/produtos/${produto.id}`}>
+                    <Button variant="outline" size="sm">
+                      Ver Detalhes
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>

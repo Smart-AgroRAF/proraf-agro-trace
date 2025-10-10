@@ -117,6 +117,7 @@ const Landing = () => {
           backgroundAttachment: 'fixed'
         }}
       >
+        <div className="absolute inset-0 bg-black/30"></div>
         <div className="container mx-auto px-4 relative z-10">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 animate-fade-in text-white drop-shadow-lg">Nossos Parceiros</h2>
           <p className="text-center text-white/90 mb-12 animate-fade-in drop-shadow-md" style={{ animationDelay: "0.1s" }}>
@@ -125,7 +126,7 @@ const Landing = () => {
           <div className="grid grid-cols-3 gap-8 max-w-4xl mx-auto">
             {/* Primeira linha: Unipampa, LAMAP, PampaTec */}
             <div
-              className="flex items-center justify-center p-4 hover:scale-110 transition-transform duration-300 animate-fade-in"
+              className="flex items-center justify-center p-6 bg-white rounded-lg shadow-md hover:scale-110 transition-transform duration-300 animate-fade-in"
               style={{ animationDelay: "0.1s" }}
             >
               <img
@@ -135,13 +136,13 @@ const Landing = () => {
               />
             </div>
             <div
-              className="flex items-center justify-center p-4 hover:scale-110 transition-transform duration-300 animate-fade-in"
+              className="flex items-center justify-center p-6 bg-white rounded-lg shadow-md hover:scale-110 transition-transform duration-300 animate-fade-in"
               style={{ animationDelay: "0.2s" }}
             >
               <img src={lamapLogo} alt="LAMAP" className="max-h-20 w-auto grayscale hover:grayscale-0 transition-all" />
             </div>
             <div
-              className="flex items-center justify-center p-4 hover:scale-110 transition-transform duration-300 animate-fade-in"
+              className="flex items-center justify-center p-6 bg-white rounded-lg shadow-md hover:scale-110 transition-transform duration-300 animate-fade-in"
               style={{ animationDelay: "0.3s" }}
             >
               <img
@@ -153,19 +154,19 @@ const Landing = () => {
             
             {/* Segunda linha: LEA, PPGES, Alegrete */}
             <div
-              className="flex items-center justify-center p-4 hover:scale-110 transition-transform duration-300 animate-fade-in"
+              className="flex items-center justify-center p-6 bg-white rounded-lg shadow-md hover:scale-110 transition-transform duration-300 animate-fade-in"
               style={{ animationDelay: "0.4s" }}
             >
               <img src={leaLogo} alt="LEA" className="max-h-20 w-auto grayscale hover:grayscale-0 transition-all" />
             </div>
             <div
-              className="flex items-center justify-center p-4 hover:scale-110 transition-transform duration-300 animate-fade-in"
+              className="flex items-center justify-center p-6 bg-white rounded-lg shadow-md hover:scale-110 transition-transform duration-300 animate-fade-in"
               style={{ animationDelay: "0.5s" }}
             >
               <img src={ppgesLogo} alt="PPGES" className="max-h-20 w-auto grayscale hover:grayscale-0 transition-all" />
             </div>
             <div
-              className="flex items-center justify-center p-4 hover:scale-110 transition-transform duration-300 animate-fade-in"
+              className="flex items-center justify-center p-6 bg-white rounded-lg shadow-md hover:scale-110 transition-transform duration-300 animate-fade-in"
               style={{ animationDelay: "0.6s" }}
             >
               <img

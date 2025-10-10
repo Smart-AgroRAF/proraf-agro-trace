@@ -1,0 +1,126 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Navbar } from "@/components/Navbar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
+
+const NovoProduto = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    comertial_name: "",
+    description: "",
+    variedade_cultivar: "",
+    code: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    setTimeout(() => {
+      toast.success("Produto cadastrado com sucesso!");
+      navigate("/produtos");
+      setLoading(false);
+    }, 1000);
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar isAuthenticated />
+      <div className="container mx-auto px-4 py-8">
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/produtos")}
+          className="mb-6"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Voltar
+        </Button>
+
+        <Card className="max-w-2xl mx-auto shadow-soft">
+          <CardHeader>
+            <CardTitle className="text-2xl">Cadastrar Novo Produto</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome do Produto *</Label>
+                <Input
+                  id="name"
+                  placeholder="Ex: Tomate Cereja"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="comertial_name">Nome Comercial</Label>
+                <Input
+                  id="comertial_name"
+                  placeholder="Ex: Tomate Sweet"
+                  value={formData.comertial_name}
+                  onChange={(e) => setFormData({ ...formData, comertial_name: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="variedade_cultivar">Variedade/Cultivar</Label>
+                <Input
+                  id="variedade_cultivar"
+                  placeholder="Ex: Sweet Million"
+                  value={formData.variedade_cultivar}
+                  onChange={(e) => setFormData({ ...formData, variedade_cultivar: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="code">Código do Produto *</Label>
+                <Input
+                  id="code"
+                  placeholder="Ex: PROD001"
+                  value={formData.code}
+                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Descrição</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Descreva o produto..."
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={4}
+                />
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <Button type="submit" className="flex-1" disabled={loading}>
+                  {loading ? "Cadastrando..." : "Cadastrar Produto"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate("/produtos")}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default NovoProduto;

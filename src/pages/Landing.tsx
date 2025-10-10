@@ -25,7 +25,7 @@ const Landing = () => {
         <div className="container mx-auto px-4 py-20 md:py-32 relative z-10">
           <div className="max-w-3xl mx-auto text-center animate-fade-in">
             <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 animate-slide-in">
-              Rastreabilidade Agrícola Completadsa
+              Rastreabilidade Agrícola Completa
             </h1>
             <p className="text-xl text-muted-foreground mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
               Gerencie seus produtos, lotes e movimentações com total transparência e controle. Do plantio à expedição,

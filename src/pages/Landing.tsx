@@ -17,17 +17,20 @@ const Landing = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${heroBg})` }}>
-          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/50 to-background"></div>
-        </div>
+      {/* Hero Section with Parallax */}
+      <section 
+        className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
+        style={{ 
+          backgroundImage: `url(${heroBg})`,
+          backgroundAttachment: 'fixed'
+        }}
+      >
         <div className="container mx-auto px-4 py-20 md:py-32 relative z-10">
           <div className="max-w-3xl mx-auto text-center animate-fade-in">
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 animate-slide-in">
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 animate-slide-in drop-shadow-lg">
               Rastreabilidade Agrícola Completa
             </h1>
-            <p className="text-xl text-muted-foreground mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+            <p className="text-xl text-white/90 mb-8 animate-fade-in drop-shadow-md" style={{ animationDelay: "0.2s" }}>
               Gerencie seus produtos, lotes e movimentações com total transparência e controle. Do plantio à expedição,
               tudo registrado e rastreável.
             </p>
@@ -41,7 +44,7 @@ const Landing = () => {
                 </Button>
               </Link>
               <Link to="/rastrear">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto hover-scale">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto hover-scale bg-white/10 text-white border-white/30 hover:bg-white/20">
                   Rastrear Lote
                 </Button>
               </Link>

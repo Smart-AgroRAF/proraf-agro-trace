@@ -54,13 +54,8 @@ const Landing = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 relative">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
-          style={{ backgroundImage: `url(${featuresBg})` }}
-        ></div>
-        <div className="absolute inset-0 bg-card/80"></div>
-        <div className="container mx-auto px-4 relative z-10">
+      <section className="py-20 bg-background">
+        <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 animate-fade-in">
             Funcionalidades Principais
           </h2>
@@ -115,10 +110,16 @@ const Landing = () => {
       </section>
 
       {/* Partnerships Section */}
-      <section className="py-20 bg-background">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 animate-fade-in">Nossos Parceiros</h2>
-          <p className="text-center text-muted-foreground mb-12 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+      <section 
+        className="py-20 bg-cover bg-center bg-no-repeat relative"
+        style={{ 
+          backgroundImage: `url(${featuresBg})`,
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        <div className="container mx-auto px-4 relative z-10">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 animate-fade-in text-white drop-shadow-lg">Nossos Parceiros</h2>
+          <p className="text-center text-white/90 mb-12 animate-fade-in drop-shadow-md" style={{ animationDelay: "0.1s" }}>
             Desenvolvido em parceria com instituições de excelência
           </p>
           <div className="grid grid-cols-3 gap-8 max-w-4xl mx-auto">

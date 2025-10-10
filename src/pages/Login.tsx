@@ -36,7 +36,10 @@ const Login = () => {
     <div className="min-h-screen relative">
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${loginBg})` }}
+        style={{ 
+          backgroundImage: `url(${loginBg})`,
+          backgroundAttachment: 'fixed'
+        }}
       >
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm"></div>
       </div>

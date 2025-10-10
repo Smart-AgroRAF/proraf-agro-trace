@@ -39,7 +39,10 @@ const Cadastro = () => {
     <div className="min-h-screen relative">
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${cadastroBg})` }}
+        style={{ 
+          backgroundImage: `url(${cadastroBg})`,
+          backgroundAttachment: 'fixed'
+        }}
       >
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm"></div>
       </div>

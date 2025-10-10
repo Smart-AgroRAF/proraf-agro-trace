@@ -11,6 +11,7 @@ interface NavbarProps {
 export const Navbar = ({ isAuthenticated = false }: NavbarProps) => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isAuth = isAuthenticated || localStorage.getItem("proraf_auth") === "true";
 
   const handleLogout = () => {
     localStorage.removeItem("proraf_auth");
@@ -27,7 +28,7 @@ export const Navbar = ({ isAuthenticated = false }: NavbarProps) => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-6">
-            {isAuthenticated ? (
+            {isAuth ? (
               <>
                 <Link to="/dashboard" className="text-foreground hover:text-primary transition-colors">
                   Dashboard
@@ -76,7 +77,7 @@ export const Navbar = ({ isAuthenticated = false }: NavbarProps) => {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-border animate-slide-in">
-            {isAuthenticated ? (
+            {isAuth ? (
               <div className="flex flex-col gap-3">
                 <Link
                   to="/dashboard"

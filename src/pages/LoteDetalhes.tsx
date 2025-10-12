@@ -89,6 +89,14 @@ const LoteDetalhes = () => {
                     </div>
                   </div>
                 </div>
+                <div className="flex justify-center pt-4 border-t">
+                  <div className="flex flex-col items-center gap-2">
+                    <p className="text-sm text-muted-foreground">QR Code do Lote</p>
+                    <div className="w-40 h-40 bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-border">
+                      <span className="text-xs text-muted-foreground">QR Code</span>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 

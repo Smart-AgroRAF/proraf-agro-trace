@@ -104,10 +104,6 @@ export const Navbar = ({ isAuthenticated = false }: NavbarProps) => {
                 <Link to="/rastrear" className="text-foreground hover:text-primary transition-colors">
                   Rastrear Lote
                 </Link>
-                <Button onClick={connectMetaMask} variant="outline" size="sm">
-                  <Wallet className="h-4 w-4 mr-2" />
-                  {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : "MetaMask"}
-                </Button>
                 <Link to="/login">
                   <Button variant="outline" size="sm">Entrar</Button>
                 </Link>
@@ -185,10 +181,6 @@ export const Navbar = ({ isAuthenticated = false }: NavbarProps) => {
                 >
                   Rastrear Lote
                 </Link>
-                <Button onClick={connectMetaMask} variant="outline" size="sm" className="w-full">
-                  <Wallet className="h-4 w-4 mr-2" />
-                  {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : "MetaMask"}
-                </Button>
                 <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="outline" size="sm" className="w-full">Entrar</Button>
                 </Link>

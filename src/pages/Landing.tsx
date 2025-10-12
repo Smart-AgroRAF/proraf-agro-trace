@@ -11,6 +11,7 @@ import leaLogo from "@/assets/lea-logo.png";
 import heroBg from "@/assets/hero-bg.jpg";
 import featuresBg from "@/assets/features-bg.png";
 import ctaBg from "@/assets/cta-bg.jpeg";
+import ctaFarmers from "@/assets/cta-farmers.png";
 
 const Landing = () => {
   return (
@@ -186,7 +187,12 @@ const Landing = () => {
             className="max-w-3xl mx-auto text-center rounded-2xl p-12 shadow-soft hover:shadow-lg transition-shadow animate-fade-in relative overflow-hidden"
             style={{ backgroundImage: `url(${ctaBg})` }}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/70 via-secondary/60 to-primary/70"></div>
+            <div 
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url(${ctaFarmers})` }}
+            >
+              <div className="absolute inset-0 bg-black/40"></div>
+            </div>
             <div className="relative z-10">
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 animate-slide-in">Pronto para começar?</h2>
               <p className="text-white/90 text-lg mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { createProduct } from "@/api/products";
@@ -14,6 +15,7 @@ import type { ProductCreate } from "@/api/types";
 const NovoProduto = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [isCustomCode, setIsCustomCode] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     comertial_name: "",
@@ -21,6 +23,40 @@ const NovoProduto = () => {
     variedade_cultivar: "",
     code: "",
   });
+
+  // Função para gerar código automático
+  const generateProductCode = (name: string) => {
+    if (!name) return "";
+    
+    // Remove acentos e caracteres especiais
+    const cleanName = name
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9\s]/g, "")
+      .toUpperCase();
+    
+    // Pega as primeiras letras das palavras
+    const words = cleanName.split(" ").filter(word => word.length > 0);
+    let code = "";
+    
+    if (words.length === 1) {
+      code = words[0].substring(0, 4);
+    } else {
+      code = words.map(word => word.charAt(0)).join("").substring(0, 4);
+    }
+    
+    // Adiciona timestamp para garantir unicidade
+    const timestamp = Date.now().toString().slice(-3);
+    return `${code}${timestamp}`;
+  };
+
+  // Gera código automaticamente quando o nome muda (se não for código customizado)
+  useEffect(() => {
+    if (!isCustomCode && formData.name) {
+      const autoCode = generateProductCode(formData.name);
+      setFormData(prev => ({ ...prev, code: autoCode }));
+    }
+  }, [formData.name, isCustomCode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +83,7 @@ const NovoProduto = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      
       <div className="container mx-auto px-4 py-8">
         <Button
           variant="ghost"
@@ -95,15 +131,42 @@ const NovoProduto = () => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="code">Código do Produto *</Label>
-                <Input
-                  id="code"
-                  placeholder="Ex: PROD001"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  required
-                />
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="customCode"
+                    checked={isCustomCode}
+                    onCheckedChange={(checked) => {
+                      setIsCustomCode(checked as boolean);
+                      if (!checked && formData.name) {
+                        // Regenera código automaticamente quando desabilita o modo customizado
+                        const autoCode = generateProductCode(formData.name);
+                        setFormData(prev => ({ ...prev, code: autoCode }));
+                      }
+                    }}
+                  />
+                  <Label htmlFor="customCode" className="text-sm">
+                    Definir código manualmente
+                  </Label>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="code">Código do Produto *</Label>
+                  <Input
+                    id="code"
+                    placeholder={isCustomCode ? "Ex: PROD001" : "Código gerado automaticamente"}
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                    disabled={!isCustomCode}
+                    required
+                    className={!isCustomCode ? "bg-gray-50 text-gray-600" : ""}
+                  />
+                  {!isCustomCode && (
+                    <p className="text-xs text-gray-500">
+                      O código será gerado automaticamente baseado no nome do produto
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">

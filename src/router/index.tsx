@@ -28,6 +28,7 @@ import LoteDetalhes from "@/pages/batches/LoteDetalhes";
 import Movimentacoes from "@/pages/movements/Movimentacoes";
 import NovaMovimentacao from "@/pages/movements/NovaMovimentacao";
 import MovimentacaoDetalhes from "@/pages/movements/MovimentacaoDetalhes";
+import { NavbarLogin } from "@/components/NavBarLogin";
 
 export const AppRoutes = () => {
   return (
@@ -43,6 +44,7 @@ export const AppRoutes = () => {
         path="/dashboard" 
         element={
           <ProtectedRoute>
+            <NavbarLogin />
             <Dashboard />
           </ProtectedRoute>
         } 
@@ -51,6 +53,7 @@ export const AppRoutes = () => {
         path="/perfil" 
         element={
           <ProtectedRoute>
+            <NavbarLogin />
             <Perfil />
           </ProtectedRoute>
         } 
@@ -61,6 +64,8 @@ export const AppRoutes = () => {
         path="/produtos" 
         element={
           <ProtectedRoute>
+            <NavbarLogin />
+
             <Produtos />
           </ProtectedRoute>
         } 
@@ -69,6 +74,8 @@ export const AppRoutes = () => {
         path="/produtos/novo" 
         element={
           <ProtectedRoute>
+            <NavbarLogin />
+
             <NovoProduto />
           </ProtectedRoute>
         } 
@@ -77,6 +84,7 @@ export const AppRoutes = () => {
         path="/produtos/:id" 
         element={
           <ProtectedRoute>
+            <NavbarLogin />
             <ProdutoDetalhes />
           </ProtectedRoute>
         } 
@@ -87,6 +95,8 @@ export const AppRoutes = () => {
         path="/lotes" 
         element={
           <ProtectedRoute>
+            <NavbarLogin />
+
             <Lotes />
           </ProtectedRoute>
         } 
@@ -95,6 +105,8 @@ export const AppRoutes = () => {
         path="/lotes/novo" 
         element={
           <ProtectedRoute>
+            <NavbarLogin />
+
             <NovoLote />
           </ProtectedRoute>
         } 
@@ -103,6 +115,8 @@ export const AppRoutes = () => {
         path="/lotes/:id" 
         element={
           <ProtectedRoute>
+            <NavbarLogin />
+
             <LoteDetalhes />
           </ProtectedRoute>
         } 
@@ -113,6 +127,8 @@ export const AppRoutes = () => {
         path="/movimentacoes" 
         element={
           <ProtectedRoute>
+            <NavbarLogin />
+
             <Movimentacoes />
           </ProtectedRoute>
         } 
@@ -121,6 +137,8 @@ export const AppRoutes = () => {
         path="/movimentacoes/nova" 
         element={
           <ProtectedRoute>
+            <NavbarLogin />
+
             <NovaMovimentacao />
           </ProtectedRoute>
         } 
@@ -129,6 +147,8 @@ export const AppRoutes = () => {
         path="/movimentacoes/:id" 
         element={
           <ProtectedRoute>
+            <NavbarLogin />
+
             <MovimentacaoDetalhes />
           </ProtectedRoute>
         } 

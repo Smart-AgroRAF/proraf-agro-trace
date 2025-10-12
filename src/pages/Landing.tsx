@@ -27,14 +27,14 @@ const Landing = () => {
         }}
       >
         <div className="container mx-auto px-4 py-20 md:py-32 relative z-10">
-          <div className="max-w-3xl mx-auto text-center animate-fade-in">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 animate-slide-in drop-shadow-lg">
-              Rastreabilidade Agrícola Completa
+          <div className="max-w-3xl mx-auto text-center animate-fade-in backdrop-blur-sm bg-black/30 p-8 rounded-2xl">
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 animate-slide-in ">
+               Proraf 
             </h1>
-            <p className="text-xl text-white/90 mb-8 animate-fade-in drop-shadow-md" style={{ animationDelay: "0.2s" }}>
+            <p className="text-xl text-white/90 mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
               Gerencie seus produtos, lotes e movimentações com total transparência e controle. Do plantio à expedição,
               tudo registrado e rastreável.
-            </p>
+            </p> 
             <div
               className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in"
               style={{ animationDelay: "0.4s" }}
@@ -133,14 +133,14 @@ const Landing = () => {
               <img
                 src={unipampaLogo}
                 alt="Unipampa"
-                className="max-h-20 w-auto grayscale hover:grayscale-0 transition-all"
+                className="max-h-20 w-auto   transition-all"
               />
             </div>
             <div
               className="flex items-center justify-center p-6 bg-white rounded-lg shadow-md hover:scale-110 transition-transform duration-300 animate-fade-in"
               style={{ animationDelay: "0.2s" }}
             >
-              <img src={lamapLogo} alt="LAMAP" className="max-h-20 w-auto grayscale hover:grayscale-0 transition-all" />
+              <img src={lamapLogo} alt="LAMAP" className="max-h-20 w-auto   transition-all" />
             </div>
             <div
               className="flex items-center justify-center p-6 bg-white rounded-lg shadow-md hover:scale-110 transition-transform duration-300 animate-fade-in"
@@ -149,7 +149,7 @@ const Landing = () => {
               <img
                 src={pampatecLogo}
                 alt="PampaTec"
-                className="max-h-20 w-auto grayscale hover:grayscale-0 transition-all"
+                className="max-h-20 w-auto   transition-all"
               />
             </div>
             
@@ -158,13 +158,13 @@ const Landing = () => {
               className="flex items-center justify-center p-6 bg-white rounded-lg shadow-md hover:scale-110 transition-transform duration-300 animate-fade-in"
               style={{ animationDelay: "0.4s" }}
             >
-              <img src={leaLogo} alt="LEA" className="max-h-20 w-auto grayscale hover:grayscale-0 transition-all" />
+              <img src={leaLogo} alt="LEA" className="max-h-20 w-auto   transition-all" />
             </div>
             <div
               className="flex items-center justify-center p-6 bg-white rounded-lg shadow-md hover:scale-110 transition-transform duration-300 animate-fade-in"
               style={{ animationDelay: "0.5s" }}
             >
-              <img src={ppgesLogo} alt="PPGES" className="max-h-20 w-auto grayscale hover:grayscale-0 transition-all" />
+              <img src={ppgesLogo} alt="PPGES" className="max-h-20 w-auto   transition-all" />
             </div>
             <div
               className="flex items-center justify-center p-6 bg-white rounded-lg shadow-md hover:scale-110 transition-transform duration-300 animate-fade-in"
@@ -173,7 +173,7 @@ const Landing = () => {
               <img
                 src={alegreteLogo}
                 alt="Prefeitura de Alegrete"
-                className="max-h-20 w-auto grayscale hover:grayscale-0 transition-all"
+                className="max-h-20 w-auto   transition-all"
               />
             </div>
           </div>

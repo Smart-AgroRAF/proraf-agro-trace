@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -9,10 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
+import { createBatch } from "@/api/batches";
+import { listProducts } from "@/api/products";
+import type { BatchCreate, Product } from "@/api/types";
 
 const NovoLote = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [produtos, setProdutos] = useState<Product[]>([]);
   const [formData, setFormData] = useState({
     code: "",
     product_id: "",
@@ -21,21 +25,40 @@ const NovoLote = () => {
     registro_talhao: false,
   });
 
-  const produtos = [
-    { id: "1", name: "Tomate Cereja" },
-    { id: "2", name: "Alface Crespa" },
-    { id: "3", name: "Cenoura" },
-  ];
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await listProducts();
+        setProdutos(data);
+      } catch (error: any) {
+        toast.error("Erro ao carregar produtos");
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    setTimeout(() => {
+    try {
+      const batchData: BatchCreate = {
+        code: formData.code,
+        product_id: parseInt(formData.product_id),
+        dt_plantio: formData.dt_plantio || undefined,
+        talhao: formData.talhao || undefined,
+        registro_talhao: formData.registro_talhao,
+      };
+
+      await createBatch(batchData);
       toast.success("Lote cadastrado com sucesso!");
       navigate("/lotes");
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao cadastrar lote");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -79,7 +102,7 @@ const NovoLote = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {produtos.map((produto) => (
-                      <SelectItem key={produto.id} value={produto.id}>
+                      <SelectItem key={produto.id} value={produto.id.toString()}>
                         {produto.name}
                       </SelectItem>
                     ))}

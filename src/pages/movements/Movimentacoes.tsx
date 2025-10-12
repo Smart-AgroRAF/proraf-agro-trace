@@ -4,51 +4,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { Plus, Search, ArrowRightLeft } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
+import { listMovements } from "@/api/movements";
+import type { Movement } from "@/api/types";
+import { toast } from "sonner";
 
 const Movimentacoes = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [movimentacoes, setMovimentacoes] = useState<Movement[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const movimentacoes = [
-    {
-      id: 1,
-      lote: "LOT2024001",
-      tipo: "Colheita",
-      quantidade: 2500,
-      data: "2024-01-15",
-      responsavel: "João Silva",
-    },
-    {
-      id: 2,
-      lote: "LOT2024002",
-      tipo: "Plantio",
-      quantidade: 1000,
-      data: "2024-01-10",
-      responsavel: "Maria Santos",
-    },
-    {
-      id: 3,
-      lote: "LOT2024003",
-      tipo: "Expedição",
-      quantidade: 3200,
-      data: "2024-01-18",
-      responsavel: "Pedro Costa",
-    },
-    {
-      id: 4,
-      lote: "LOT2024001",
-      tipo: "Tratamento",
-      quantidade: 2500,
-      data: "2024-01-08",
-      responsavel: "Ana Paula",
-    },
-  ];
+  useEffect(() => {
+    const fetchMovements = async () => {
+      try {
+        const data = await listMovements();
+        setMovimentacoes(data);
+      } catch (error: any) {
+        toast.error("Erro ao carregar movimentações");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMovements();
+  }, []);
 
   const filteredMovimentacoes = movimentacoes.filter((m) =>
-    m.lote.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    m.tipo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    m.responsavel.toLowerCase().includes(searchTerm.toLowerCase())
+    m.tipo_movimentacao.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getTipoColor = (tipo: string) => {
@@ -97,8 +80,13 @@ const Movimentacoes = () => {
         </div>
 
         {/* Movimentações List */}
-        <div className="space-y-4">
-          {filteredMovimentacoes.map((mov) => (
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Carregando movimentações...</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredMovimentacoes.map((mov) => (
             <Card key={mov.id} className="shadow-soft hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -108,11 +96,11 @@ const Movimentacoes = () => {
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold">{mov.lote}</h3>
-                        <Badge className={getTipoColor(mov.tipo)}>{mov.tipo}</Badge>
+                        <h3 className="font-semibold">Lote ID: {mov.batch_id}</h3>
+                        <Badge className={getTipoColor(mov.tipo_movimentacao)}>{mov.tipo_movimentacao}</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Responsável: {mov.responsavel}
+                        Usuário ID: {mov.user_id}
                       </p>
                     </div>
                   </div>
@@ -125,7 +113,7 @@ const Movimentacoes = () => {
                     <div className="text-right">
                       <p className="text-sm text-muted-foreground">Data</p>
                       <p className="font-semibold">
-                        {new Date(mov.data).toLocaleDateString("pt-BR")}
+                        {new Date(mov.created_at).toLocaleDateString("pt-BR")}
                       </p>
                     </div>
                     <Link to={`/movimentacoes/${mov.id}`}>
@@ -137,10 +125,11 @@ const Movimentacoes = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
-        {filteredMovimentacoes.length === 0 && (
+        {!loading && filteredMovimentacoes.length === 0 && (
           <div className="text-center py-12">
             <ArrowRightLeft className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">Nenhuma movimentação encontrada</p>

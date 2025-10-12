@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
+import { createProduct } from "@/api/products";
+import type { ProductCreate } from "@/api/types";
 
 const NovoProduto = () => {
   const navigate = useNavigate();
@@ -24,11 +26,23 @@ const NovoProduto = () => {
     e.preventDefault();
     setLoading(true);
 
-    setTimeout(() => {
+    try {
+      const productData: ProductCreate = {
+        name: formData.name,
+        code: formData.code,
+        comertial_name: formData.comertial_name || undefined,
+        description: formData.description || undefined,
+        variedade_cultivar: formData.variedade_cultivar || undefined,
+      };
+
+      await createProduct(productData);
       toast.success("Produto cadastrado com sucesso!");
       navigate("/produtos");
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao cadastrar produto");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (

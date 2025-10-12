@@ -4,49 +4,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { Plus, Search, Package } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { listProducts } from "@/api/products";
+import type { Product } from "@/api/types";
+import { toast } from "sonner";
 
 const Produtos = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [produtos, setProdutos] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const produtos = [
-    {
-      id: 1,
-      name: "Tomate Cereja",
-      comertial_name: "Tomate Sweet",
-      variedade_cultivar: "Sweet Million",
-      code: "PROD001",
-      status: true,
-    },
-    {
-      id: 2,
-      name: "Alface Crespa",
-      comertial_name: "Alface Fresh",
-      variedade_cultivar: "Crespa Verde",
-      code: "PROD002",
-      status: true,
-    },
-    {
-      id: 3,
-      name: "Cenoura",
-      comertial_name: "Cenoura Premium",
-      variedade_cultivar: "Nantes",
-      code: "PROD003",
-      status: true,
-    },
-    {
-      id: 4,
-      name: "Rúcula",
-      comertial_name: "Rúcula Selvagem",
-      variedade_cultivar: "Cultivada",
-      code: "PROD004",
-      status: false,
-    },
-  ];
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await listProducts();
+        setProdutos(data);
+      } catch (error: any) {
+        toast.error("Erro ao carregar produtos");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const filteredProdutos = produtos.filter((p) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.comertial_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.comertial_name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
     p.code.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -81,8 +66,13 @@ const Produtos = () => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProdutos.map((produto) => (
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Carregando produtos...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProdutos.map((produto) => (
             <Card key={produto.id} className="shadow-soft hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -100,9 +90,9 @@ const Produtos = () => {
                   </span>
                 </div>
                 <h3 className="font-semibold text-lg mb-1">{produto.name}</h3>
-                <p className="text-sm text-muted-foreground mb-2">{produto.comertial_name}</p>
+                <p className="text-sm text-muted-foreground mb-2">{produto.comertial_name || "Sem nome comercial"}</p>
                 <p className="text-xs text-muted-foreground mb-4">
-                  Variedade: {produto.variedade_cultivar}
+                  Variedade: {produto.variedade_cultivar || "Não especificada"}
                 </p>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono bg-muted px-2 py-1 rounded">
@@ -116,10 +106,11 @@ const Produtos = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
-        {filteredProdutos.length === 0 && (
+        {!loading && filteredProdutos.length === 0 && (
           <div className="text-center py-12">
             <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">Nenhum produto encontrado</p>

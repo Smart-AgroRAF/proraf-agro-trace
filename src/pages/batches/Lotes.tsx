@@ -4,53 +4,50 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { Plus, Search, Boxes, QrCode } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
+import { listBatches } from "@/api/batches";
+import type { Batch } from "@/api/types";
+import { toast } from "sonner";
 
 const Lotes = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [lotes, setLotes] = useState<Batch[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const lotes = [
-    {
-      id: 1,
-      code: "LOT2024001",
-      product: "Tomate Cereja",
-      dt_plantio: "2024-01-05",
-      dt_colheita: "2024-03-15",
-      status: "Colheita",
-      talhao: "Talhão A1",
-      producao: 2500,
-    },
-    {
-      id: 2,
-      code: "LOT2024002",
-      product: "Alface Crespa",
-      dt_plantio: "2024-01-10",
-      dt_colheita: null,
-      status: "Plantio",
-      talhao: "Talhão B2",
-      producao: 0,
-    },
-    {
-      id: 3,
-      code: "LOT2024003",
-      product: "Cenoura",
-      dt_plantio: "2023-12-20",
-      dt_colheita: "2024-01-15",
-      dt_expedition: "2024-01-18",
-      status: "Expedido",
-      talhao: "Talhão C1",
-      producao: 3200,
-    },
-  ];
+  useEffect(() => {
+    const fetchBatches = async () => {
+      try {
+        const data = await listBatches();
+        setLotes(data);
+      } catch (error: any) {
+        toast.error("Erro ao carregar lotes");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBatches();
+  }, []);
 
   const filteredLotes = lotes.filter((l) =>
     l.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    l.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    l.talhao.toLowerCase().includes(searchTerm.toLowerCase())
+    (l.talhao?.toLowerCase() || "").includes(searchTerm.toLowerCase())
   );
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (batch: Batch) => {
+    if (batch.dt_expedition) return "bg-muted text-muted-foreground";
+    if (batch.dt_colheita) return "bg-primary/20 text-primary";
+    return "bg-secondary/20 text-secondary";
+  };
+
+  const getStatusText = (batch: Batch) => {
+    if (batch.dt_expedition) return "Expedido";
+    if (batch.dt_colheita) return "Colheita";
+    return "Plantio";
+  };
+
+  const oldGetStatusColor = (status: string) => {
     switch (status) {
       case "Plantio":
         return "bg-secondary/20 text-secondary";
@@ -94,8 +91,13 @@ const Lotes = () => {
         </div>
 
         {/* Lotes Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredLotes.map((lote) => (
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Carregando lotes...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {filteredLotes.map((lote) => (
             <Card key={lote.id} className="shadow-soft hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -105,21 +107,23 @@ const Lotes = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold text-lg">{lote.code}</h3>
-                      <p className="text-sm text-muted-foreground">{lote.product}</p>
+                      <p className="text-sm text-muted-foreground">Produto ID: {lote.product_id}</p>
                     </div>
                   </div>
-                  <Badge className={getStatusColor(lote.status)}>{lote.status}</Badge>
+                  <Badge className={getStatusColor(lote)}>{getStatusText(lote)}</Badge>
                 </div>
 
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Talhão:</span>
-                    <span className="font-medium">{lote.talhao}</span>
+                    <span className="font-medium">{lote.talhao || "Não informado"}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Plantio:</span>
-                    <span>{new Date(lote.dt_plantio).toLocaleDateString("pt-BR")}</span>
-                  </div>
+                  {lote.dt_plantio && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Plantio:</span>
+                      <span>{new Date(lote.dt_plantio).toLocaleDateString("pt-BR")}</span>
+                    </div>
+                  )}
                   {lote.dt_colheita && (
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Colheita:</span>
@@ -144,10 +148,11 @@ const Lotes = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
-        {filteredLotes.length === 0 && (
+        {!loading && filteredLotes.length === 0 && (
           <div className="text-center py-12">
             <Boxes className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">Nenhum lote encontrado</p>

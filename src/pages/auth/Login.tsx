@@ -8,6 +8,7 @@ import { Navbar } from "@/components/Navbar";
 import { toast } from "sonner";
 import prorafLogo from "@/assets/proraf-logo.png";
 import loginBg from "@/assets/login-bg.jpg";
+import { login } from "@/api/auth";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -19,17 +20,15 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulação de login
-    setTimeout(() => {
-      if (email && senha) {
-        localStorage.setItem("proraf_auth", "true");
-        toast.success("Login realizado com sucesso!");
-        navigate("/dashboard");
-      } else {
-        toast.error("Preencha todos os campos");
-      }
+    try {
+      await login({ username: email, password: senha });
+      toast.success("Login realizado com sucesso!");
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao fazer login");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (

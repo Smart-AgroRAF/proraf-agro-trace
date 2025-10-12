@@ -9,6 +9,8 @@ import { Navbar } from "@/components/Navbar";
 import { toast } from "sonner";
 import prorafLogo from "@/assets/proraf-logo.png";
 import cadastroBg from "@/assets/cadastro-bg.jpg";
+import { register } from "@/api/auth";
+import type { RegisterRequest } from "@/api/types";
 
 const Cadastro = () => {
   const navigate = useNavigate();
@@ -27,12 +29,25 @@ const Cadastro = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulação de cadastro
-    setTimeout(() => {
+    try {
+      const registerData: RegisterRequest = {
+        nome: formData.nome,
+        email: formData.email,
+        senha: formData.senha,
+        tipo_pessoa: tipoPessoa === "fisica" ? "F" : "J",
+        telefone: formData.telefone || undefined,
+        cpf: tipoPessoa === "fisica" ? formData.cpf : undefined,
+        cnpj: tipoPessoa === "juridica" ? formData.cnpj : undefined,
+      };
+
+      await register(registerData);
       toast.success("Cadastro realizado com sucesso!");
       navigate("/login");
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao realizar cadastro");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (

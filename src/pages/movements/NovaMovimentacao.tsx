@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -9,10 +9,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
+import { createMovement } from "@/api/movements";
+import { listBatches } from "@/api/batches";
+import type { MovementCreate, Batch } from "@/api/types";
 
 const NovaMovimentacao = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [lotes, setLotes] = useState<Batch[]>([]);
   const [formData, setFormData] = useState({
     lote_id: "",
     tipo: "",
@@ -20,12 +24,6 @@ const NovaMovimentacao = () => {
     data: "",
     observacoes: "",
   });
-
-  const lotes = [
-    { id: "1", code: "LOT2024001" },
-    { id: "2", code: "LOT2024002" },
-    { id: "3", code: "LOT2024003" },
-  ];
 
   const tiposMovimentacao = [
     "Plantio",
@@ -35,15 +33,38 @@ const NovaMovimentacao = () => {
     "Expedição",
   ];
 
+  useEffect(() => {
+    const fetchBatches = async () => {
+      try {
+        const data = await listBatches();
+        setLotes(data);
+      } catch (error: any) {
+        toast.error("Erro ao carregar lotes");
+      }
+    };
+
+    fetchBatches();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    setTimeout(() => {
+    try {
+      const movementData: MovementCreate = {
+        batch_id: parseInt(formData.lote_id),
+        tipo_movimentacao: formData.tipo,
+        quantidade: parseFloat(formData.quantidade),
+      };
+
+      await createMovement(movementData);
       toast.success("Movimentação registrada com sucesso!");
       navigate("/movimentacoes");
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao registrar movimentação");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -76,7 +97,7 @@ const NovaMovimentacao = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {lotes.map((lote) => (
-                      <SelectItem key={lote.id} value={lote.id}>
+                      <SelectItem key={lote.id} value={lote.id.toString()}>
                         {lote.code}
                       </SelectItem>
                     ))}

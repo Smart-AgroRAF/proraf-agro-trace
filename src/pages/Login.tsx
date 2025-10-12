@@ -41,7 +41,7 @@ const Login = () => {
           backgroundAttachment: 'fixed'
         }}
       >
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm"></div>
+        <div className="absolute inset-0 bg-background/50 backdrop-blur-sm"></div>
       </div>
       <div className="relative z-10">
         <Navbar />

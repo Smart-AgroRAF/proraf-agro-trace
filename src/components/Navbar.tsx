@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogOut, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { LogOut, Menu, X, Wallet } from "lucide-react";
+import { useState, useEffect } from "react";
 import prorafLogo from "@/assets/proraf-logo.png";
+import { useToast } from "@/hooks/use-toast";
 
 interface NavbarProps {
   isAuthenticated?: boolean;
@@ -10,8 +11,52 @@ interface NavbarProps {
 
 export const Navbar = ({ isAuthenticated = false }: NavbarProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const isAuth = isAuthenticated || localStorage.getItem("proraf_auth") === "true";
+
+  useEffect(() => {
+    checkWalletConnection();
+  }, []);
+
+  const checkWalletConnection = async () => {
+    if (typeof window.ethereum !== "undefined") {
+      try {
+        const accounts = await window.ethereum.request({ method: "eth_accounts" }) as string[];
+        if (accounts.length > 0) {
+          setWalletAddress(accounts[0]);
+        }
+      } catch (error) {
+        console.error("Error checking wallet connection:", error);
+      }
+    }
+  };
+
+  const connectMetaMask = async () => {
+    if (typeof window.ethereum !== "undefined") {
+      try {
+        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" }) as string[];
+        setWalletAddress(accounts[0]);
+        toast({
+          title: "Carteira conectada",
+          description: `Conectado: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`,
+        });
+      } catch (error) {
+        toast({
+          title: "Erro ao conectar",
+          description: "Não foi possível conectar à MetaMask",
+          variant: "destructive",
+        });
+      }
+    } else {
+      toast({
+        title: "MetaMask não encontrada",
+        description: "Por favor, instale a extensão MetaMask",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("proraf_auth");
@@ -45,6 +90,10 @@ export const Navbar = ({ isAuthenticated = false }: NavbarProps) => {
                 <Link to="/perfil" className="text-foreground hover:text-primary transition-colors">
                   Perfil
                 </Link>
+                <Button onClick={connectMetaMask} variant="outline" size="sm">
+                  <Wallet className="h-4 w-4 mr-2" />
+                  {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : "MetaMask"}
+                </Button>
                 <Button onClick={handleLogout} variant="outline" size="sm">
                   <LogOut className="h-4 w-4 mr-2" />
                   Sair
@@ -55,6 +104,10 @@ export const Navbar = ({ isAuthenticated = false }: NavbarProps) => {
                 <Link to="/rastrear" className="text-foreground hover:text-primary transition-colors">
                   Rastrear Lote
                 </Link>
+                <Button onClick={connectMetaMask} variant="outline" size="sm">
+                  <Wallet className="h-4 w-4 mr-2" />
+                  {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : "MetaMask"}
+                </Button>
                 <Link to="/login">
                   <Button variant="outline" size="sm">Entrar</Button>
                 </Link>
@@ -114,6 +167,10 @@ export const Navbar = ({ isAuthenticated = false }: NavbarProps) => {
                 >
                   Perfil
                 </Link>
+                <Button onClick={connectMetaMask} variant="outline" size="sm" className="w-full mt-2">
+                  <Wallet className="h-4 w-4 mr-2" />
+                  {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : "MetaMask"}
+                </Button>
                 <Button onClick={handleLogout} variant="outline" size="sm" className="w-full mt-2">
                   <LogOut className="h-4 w-4 mr-2" />
                   Sair
@@ -128,6 +185,10 @@ export const Navbar = ({ isAuthenticated = false }: NavbarProps) => {
                 >
                   Rastrear Lote
                 </Link>
+                <Button onClick={connectMetaMask} variant="outline" size="sm" className="w-full">
+                  <Wallet className="h-4 w-4 mr-2" />
+                  {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : "MetaMask"}
+                </Button>
                 <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="outline" size="sm" className="w-full">Entrar</Button>
                 </Link>

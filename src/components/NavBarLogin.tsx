@@ -112,7 +112,7 @@ export const NavbarLogin = ({ isAuthenticated = false }: NavbarProps) => {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-border animate-slide-in">
-            {isAuth ? (
+         
               <div className="flex flex-col gap-3">
                 <Link
                   to="/dashboard"
@@ -158,23 +158,7 @@ export const NavbarLogin = ({ isAuthenticated = false }: NavbarProps) => {
                   Sair
                 </Button>
               </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                <Link
-                  to="/rastrear"
-                  className="text-foreground hover:text-primary transition-colors py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Rastrear Lote
-                </Link>
-                <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="outline" size="sm" className="w-full">Entrar</Button>
-                </Link>
-                <Link to="/cadastro" onClick={() => setMobileMenuOpen(false)}>
-                  <Button size="sm" className="w-full">Cadastrar</Button>
-                </Link>
-              </div>
-            )}
+            
           </div>
         )}
       </div>

@@ -119,24 +119,6 @@ const ProdutoDetalhes = () => {
                 </div>
               </CardContent>
             </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Estatísticas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Total de Lotes</span>
-                  <span className="font-semibold">{produto.lotes.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Produção Total</span>
-                  <span className="font-semibold">
-                    {produto.lotes.reduce((sum, l) => sum + l.producao, 0)} kg
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>

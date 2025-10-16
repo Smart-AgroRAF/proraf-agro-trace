@@ -3,6 +3,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { login as apiLogin, logout as apiLogout, isAuthenticated } from '../api/auth';
+import { getCurrentUser } from '../api/user';
 import type { LoginRequest, User } from '../api/types';
 
 interface AuthContextType {
@@ -13,6 +14,7 @@ interface AuthContextType {
   login: (credentials: LoginRequest) => Promise<void>;
   logout: () => void;
   updateUser: (user: User) => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,16 +27,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Carrega usuário do token ao iniciar
+  // Carrega usuário da API ao iniciar
   useEffect(() => {
-    const loadUser = () => {
+    const loadUser = async () => {
       try {
         if (isAuthenticated()) {
-          const userData = getUserFromToken();
+          const userData = await getCurrentUser();
           setUser(userData);
         }
       } catch (error) {
         console.error('Erro ao carregar usuário:', error);
+        // Se der erro, limpa o token
+        apiLogout();
       } finally {
         setIsLoading(false);
       }
@@ -46,7 +50,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (credentials: LoginRequest) => {
     try {
       await apiLogin(credentials);
-      const userData = getUserFromToken();
+      // Busca dados do usuário após login
+      const userData = await getCurrentUser();
       setUser(userData);
     } catch (error) {
       throw error;
@@ -62,6 +67,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(updatedUser);
   };
 
+  const refreshUser = async () => {
+    try {
+      const userData = await getCurrentUser();
+      setUser(userData);
+    } catch (error) {
+      console.error('Erro ao atualizar usuário:', error);
+      throw error;
+    }
+  };
+
   const value: AuthContextType = {
     user,
     isLoading,
@@ -70,6 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     updateUser,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -84,35 +100,6 @@ export const useAuth = (): AuthContextType => {
     throw new Error('useAuth deve ser usado dentro de um AuthProvider');
   }
   return context;
-};
-
-/**
- * Extrai dados do usuário do token JWT
- */
-const getUserFromToken = (): User | null => {
-  try {
-    const token = localStorage.getItem('proraf_token');
-    if (!token) return null;
-
-    const payload = token.split('.')[1];
-    const decoded = JSON.parse(atob(payload));
-
-    // Monta objeto User a partir do token
-    return {
-      id: decoded.user_id || 0,
-      nome: decoded.nome || '',
-      email: decoded.sub || '',
-      tipo_pessoa: decoded.tipo_pessoa || 'F',
-      tipo_perfil: decoded.tipo_perfil || 'user',
-      cpf: decoded.cpf,
-      cnpj: decoded.cnpj,
-      telefone: decoded.telefone,
-      created_at: decoded.created_at || new Date().toISOString(),
-      updated_at: decoded.updated_at || new Date().toISOString(),
-    };
-  } catch {
-    return null;
-  }
 };
 
 export default AuthContext;

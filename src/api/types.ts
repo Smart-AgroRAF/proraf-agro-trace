@@ -49,7 +49,7 @@ export interface ProductCreate {
   description?: string;
   variedade_cultivar?: string;
   status?: boolean;
-  image?: string;
+  image: string;
   code: string;
 }
 

@@ -8,6 +8,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { MapPin, Image, FileText, Plus, Edit } from "lucide-react";
 import { toast } from "sonner";
+import {
+    getUserStats,
+    updateCurrentUser,
+    getUserRecentActivity
+ } from "@/api/user";
+ 
+import type { UserStats, UserRecentActivity } from "@/api/user";
+import { useAuth } from "@/context/AuthContext";
+
 
 export default function Perfil() {
   const navigate = useNavigate();

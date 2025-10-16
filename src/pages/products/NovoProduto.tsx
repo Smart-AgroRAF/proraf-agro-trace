@@ -21,6 +21,7 @@ const NovoProduto = () => {
     comertial_name: "",
     description: "",
     variedade_cultivar: "",
+    image: "",
     code: "",
   });
 
@@ -68,6 +69,7 @@ const NovoProduto = () => {
         code: formData.code,
         comertial_name: formData.comertial_name || undefined,
         description: formData.description || undefined,
+        image: formData.image || undefined,
         variedade_cultivar: formData.variedade_cultivar || undefined,
       };
 
@@ -130,7 +132,26 @@ const NovoProduto = () => {
                   onChange={(e) => setFormData({ ...formData, variedade_cultivar: e.target.value })}
                 />
               </div>
-
+              <div className="space-y-2">
+                  <Label htmlFor="img">Imagem do Produto</Label>
+                  <div className="text-sm text-gray-500 mb-1">Formatos aceitos: JPG, PNG, GIF.</div>
+                  <input
+                    type="file"
+                    id="img"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setFormData(prev => ({ ...prev, img: reader.result as string }));
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                </div>
+              
               <div className="space-y-3">
                 <div className="flex items-center space-x-2">
                   <Checkbox
@@ -150,6 +171,7 @@ const NovoProduto = () => {
                   </Label>
                 </div>
                 
+
                 <div className="space-y-2">
                   <Label htmlFor="code">Código do Produto *</Label>
                   <Input

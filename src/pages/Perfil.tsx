@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,30 +6,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { MapPin, Image, FileText, Plus, Edit } from "lucide-react";
+import { MapPin, FileText, Plus, Edit, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import {
-    getUserStats,
-    updateCurrentUser,
-    getUserRecentActivity
- } from "@/api/user";
- 
-import type { UserStats, UserRecentActivity } from "@/api/user";
+import { getCurrentUser, updateCurrentUser } from "@/api/user";
+import type { User } from "@/api/types";
 import { useAuth } from "@/context/AuthContext";
 
 
 export default function Perfil() {
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userData, setUserData] = useState<User | null>(null);
   
-  // Dados mockados do usuário
-  const userData = {
-    nome: "João Silva",
-    email: "joao@example.com",
-    tipo_pessoa: "fisica",
-    cpf: "123.456.789-00",
-    telefone: "(11) 98765-4321",
-  };
+  const [editData, setEditData] = useState({
+    nome: "",
+    telefone: "",
+  });
 
   // Dados mockados dos campos
   const [campos, setCampos] = useState([
@@ -55,6 +50,47 @@ export default function Perfil() {
     observacoes: "",
   });
 
+  // Carrega dados do usuário
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(true);
+        const user = await getCurrentUser();
+        setUserData(user);
+        setEditData({
+          nome: user.nome,
+          telefone: user.telefone || "",
+        });
+      } catch (error) {
+        console.error("Erro ao carregar dados do usuário:", error);
+        toast.error("Erro ao carregar dados do usuário");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  const handleEditProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const updatedUser = await updateCurrentUser({
+        nome: editData.nome,
+        telefone: editData.telefone,
+      });
+      
+      setUserData(updatedUser);
+      await refreshUser();
+      setIsEditModalOpen(false);
+      toast.success("Perfil atualizado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao atualizar perfil:", error);
+      toast.error("Erro ao atualizar perfil");
+    }
+  };
+
   const handleAddCampo = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -75,6 +111,22 @@ export default function Perfil() {
     toast.success("Campo adicionado com sucesso!");
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Erro ao carregar dados do usuário</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       
@@ -82,9 +134,55 @@ export default function Perfil() {
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Dados do Usuário */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Meu Perfil</CardTitle>
-              <CardDescription>Informações da sua conta</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-2xl">Meu Perfil</CardTitle>
+                <CardDescription>Informações da sua conta</CardDescription>
+              </div>
+              <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <Edit className="mr-2 h-4 w-4" />
+                    Editar Perfil
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>Editar Perfil</DialogTitle>
+                    <DialogDescription>
+                      Atualize suas informações pessoais
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleEditProfile} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-nome">Nome *</Label>
+                      <Input
+                        id="edit-nome"
+                        value={editData.nome}
+                        onChange={(e) => setEditData({...editData, nome: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-telefone">Telefone</Label>
+                      <Input
+                        id="edit-telefone"
+                        placeholder="(00) 00000-0000"
+                        value={editData.telefone}
+                        onChange={(e) => setEditData({...editData, telefone: e.target.value})}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-3">
+                      <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>
+                        Cancelar
+                      </Button>
+                      <Button type="submit" className="bg-primary hover:bg-primary/90">
+                        Salvar Alterações
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -98,13 +196,13 @@ export default function Perfil() {
                 </div>
                 <div>
                   <Label className="text-muted-foreground">
-                    {userData.tipo_pessoa === "fisica" ? "CPF" : "CNPJ"}
+                    {userData.tipo_pessoa === "F" ? "CPF" : "CNPJ"}
                   </Label>
-                  <p className="text-lg font-medium">{userData.cpf}</p>
+                  <p className="text-lg font-medium">{userData.cpf || userData.cnpj}</p>
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Telefone</Label>
-                  <p className="text-lg font-medium">{userData.telefone}</p>
+                  <p className="text-lg font-medium">{userData.telefone || "Não informado"}</p>
                 </div>
               </div>
             </CardContent>

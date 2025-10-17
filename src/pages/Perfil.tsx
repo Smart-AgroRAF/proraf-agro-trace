@@ -10,12 +10,12 @@ import { MapPin, FileText, Plus, Edit, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { getCurrentUser, updateCurrentUser } from "@/api/user";
 import type { User } from "@/api/types";
-import { useAuth } from "@/context/AuthContext";
+// import { useAuth } from "@/context/AuthContext";
 
 
 export default function Perfil() {
   const navigate = useNavigate();
-  const { refreshUser } = useAuth();
+  // const { refreshUser } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -82,7 +82,7 @@ export default function Perfil() {
       });
       
       setUserData(updatedUser);
-      await refreshUser();
+      // await refreshUser();
       setIsEditModalOpen(false);
       toast.success("Perfil atualizado com sucesso!");
     } catch (error) {

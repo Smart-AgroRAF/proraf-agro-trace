@@ -17,6 +17,48 @@ export const createProduct = async (data: ProductCreate): Promise<Product> => {
 };
 
 /**
+ * Cria um novo produto com upload de imagem
+ */
+export const createProductWithImage = async (
+  data: ProductCreateWithImage
+): Promise<Product> => {
+  const formData = new FormData();
+  
+  // Adiciona campos obrigatórios
+  formData.append('name', data.name);
+  formData.append('code', data.code);
+  
+  // Adiciona campos opcionais
+  if (data.comertial_name) formData.append('comertial_name', data.comertial_name);
+  if (data.description) formData.append('description', data.description);
+  if (data.variedade_cultivar) formData.append('variedade_cultivar', data.variedade_cultivar);
+  if (data.status !== undefined) formData.append('status', String(data.status));
+  
+  // Adiciona arquivo de imagem
+  if (data.image) {
+    formData.append('image', data.image);
+  }
+  
+  // Faz requisição com FormData
+  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/products/with-image`, {
+    method: 'POST',
+    headers: {
+      'X-API-Key': import.meta.env.VITE_API_KEY,
+      'Authorization': `Bearer ${localStorage.getItem('proraf_token')}`,
+      // NÃO adicione Content-Type, o browser define automaticamente com boundary
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
+    throw new Error(errorData.detail || 'Erro ao criar produto');
+  }
+
+  return response.json();
+};
+
+/**
  * Lista todos os produtos com filtros opcionais
  */
 export const listProducts = async (filters?: ProductFilters): Promise<Product[]> => {
@@ -75,3 +117,17 @@ export const listInactiveProducts = async (
 ): Promise<Product[]> => {
   return listProducts({ skip, limit, status_filter: false });
 };
+
+// ============================================
+// TIPOS ADICIONAIS
+// ============================================
+
+export interface ProductCreateWithImage {
+  name: string;
+  code: string;
+  comertial_name?: string;
+  description?: string;
+  variedade_cultivar?: string;
+  status?: boolean;
+  image?: File; // Arquivo de imagem
+}

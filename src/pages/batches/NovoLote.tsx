@@ -17,6 +17,7 @@ const NovoLote = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [produtos, setProdutos] = useState<Product[]>([]);
+  const [isCustomCode, setIsCustomCode] = useState(false);
   const [formData, setFormData] = useState({
     code: "",
     product_id: "",
@@ -24,6 +25,34 @@ const NovoLote = () => {
     talhao: "",
     registro_talhao: false,
   });
+
+  // Função para gerar código automático do lote
+  const generateBatchCode = (productId: string, dtPlantio: string) => {
+    if (!productId || !dtPlantio) return "";
+    
+    // Busca o produto selecionado para usar no código
+    const selectedProduct = produtos.find(p => p.id.toString() === productId);
+    const productCode = selectedProduct?.code || "PROD";
+    
+    // Formatar a data (YYMMDD)
+    const date = new Date(dtPlantio);
+    const year = date.getFullYear().toString().slice(-2);
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    
+    // Adiciona timestamp para garantir unicidade
+    const timestamp = Date.now().toString().slice(-3);
+    
+    return `LOT${productCode}${year}${month}${day}${timestamp}`;
+  };
+
+  // Gera código automaticamente quando produto ou data mudam (se não for código customizado)
+  useEffect(() => {
+    if (!isCustomCode && formData.product_id && formData.dt_plantio) {
+      const autoCode = generateBatchCode(formData.product_id, formData.dt_plantio);
+      setFormData(prev => ({ ...prev, code: autoCode }));
+    }
+  }, [formData.product_id, formData.dt_plantio, isCustomCode, produtos]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -79,15 +108,42 @@ const NovoLote = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="code">Código do Lote *</Label>
-                <Input
-                  id="code"
-                  placeholder="Ex: LOT2024001"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  required
-                />
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="customCode"
+                    checked={isCustomCode}
+                    onCheckedChange={(checked) => {
+                      setIsCustomCode(checked as boolean);
+                      if (!checked && formData.product_id && formData.dt_plantio) {
+                        // Regenera código automaticamente quando desabilita o modo customizado
+                        const autoCode = generateBatchCode(formData.product_id, formData.dt_plantio);
+                        setFormData(prev => ({ ...prev, code: autoCode }));
+                      }
+                    }}
+                  />
+                  <Label htmlFor="customCode" className="text-sm">
+                    Definir código manualmente
+                  </Label>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="code">Código do Lote *</Label>
+                  <Input
+                    id="code"
+                    placeholder={isCustomCode ? "Ex: LOT2024001" : "Código gerado automaticamente"}
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                    disabled={!isCustomCode}
+                    required
+                    className={!isCustomCode ? "bg-gray-50 text-gray-600" : ""}
+                  />
+                  {!isCustomCode && (
+                    <p className="text-xs text-gray-500">
+                      O código será gerado automaticamente baseado no produto e data de plantio
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">

@@ -305,22 +305,19 @@ const ProdutoDetalhes = () => {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center overflow-hidden">
                       {produto.image ? (
                         <img 
                           src={produto.image} 
                           alt={produto.name}
-                          className="w-16 h-16 rounded-lg object-cover"
+                          className="w-full h-full object-cover"
                           onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            target.nextElementSibling?.classList.remove('hidden');
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.parentElement?.querySelector('svg')?.classList.remove('hidden');
                           }}
                         />
-                      ) : (
-                        <Package className="h-8 w-8 text-primary" />
-                      )}
-                      <Package className="h-8 w-8 text-primary hidden" />
+                      ) : null}
+                      <Package className={`h-8 w-8 text-primary ${produto.image ? 'hidden' : ''}`} />
                     </div>
                     <div>
                       <CardTitle className="text-2xl mb-2">{produto.name}</CardTitle>

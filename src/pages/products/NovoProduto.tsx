@@ -9,19 +9,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
-import { createProduct } from "@/api/products";
-import type { ProductCreate } from "@/api/types";
+import { createProductWithImage } from "@/api/products";
 
 const NovoProduto = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [isCustomCode, setIsCustomCode] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     comertial_name: "",
     description: "",
     variedade_cultivar: "",
-    image: "",
     code: "",
   });
 
@@ -64,16 +63,16 @@ const NovoProduto = () => {
     setLoading(true);
 
     try {
-      const productData: ProductCreate = {
+      const productData = {
         name: formData.name,
         code: formData.code,
         comertial_name: formData.comertial_name || undefined,
         description: formData.description || undefined,
-        image: formData.image || undefined,
         variedade_cultivar: formData.variedade_cultivar || undefined,
+        image: imageFile || undefined,
       };
 
-      await createProduct(productData);
+      await createProductWithImage(productData);
       toast.success("Produto cadastrado com sucesso!");
       navigate("/produtos");
     } catch (error: any) {
@@ -133,24 +132,20 @@ const NovoProduto = () => {
                 />
               </div>
               <div className="space-y-2">
-                  <Label htmlFor="img">Imagem do Produto</Label>
-                  <div className="text-sm text-gray-500 mb-1">Formatos aceitos: JPG, PNG, GIF.</div>
-                  <input
-                    type="file"
-                    id="img"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setFormData(prev => ({ ...prev, img: reader.result as string }));
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                </div>
+                <Label htmlFor="image">Imagem do Produto</Label>
+                <div className="text-sm text-muted-foreground mb-1">Formatos aceitos: JPG, PNG, GIF</div>
+                <Input
+                  type="file"
+                  id="image"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setImageFile(file);
+                    }
+                  }}
+                />
+              </div>
               
               <div className="space-y-3">
                 <div className="flex items-center space-x-2">

@@ -80,17 +80,20 @@ const Rastrear = () => {
               <Card className="shadow-soft">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
-                    {resultado.product.image ? (
-                      <img 
-                        src={getProductImageUrl(resultado.product.image)} 
-                        alt={resultado.product.name}
-                        className="w-24 h-24 object-cover rounded-lg"
-                      />
-                    ) : (
-                      <div className="w-24 h-24 bg-primary/10 rounded-lg flex items-center justify-center">
-                        <Package className="h-12 w-12 text-primary" />
-                      </div>
-                    )}
+                    <div className="w-24 h-24 bg-primary/10 rounded-lg flex items-center justify-center overflow-hidden">
+                      {resultado.product.image ? (
+                        <img 
+                          src={getProductImageUrl(resultado.product.image)} 
+                          alt={resultado.product.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.parentElement?.querySelector('svg')?.classList.remove('hidden');
+                          }}
+                        />
+                      ) : null}
+                      <Package className={`h-12 w-12 text-primary ${resultado.product.image ? 'hidden' : ''}`} />
+                    </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
                         <h2 className="text-2xl font-bold">{resultado.product.name}</h2>

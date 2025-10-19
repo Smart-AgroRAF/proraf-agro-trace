@@ -74,8 +74,19 @@ const Produtos = () => {
             <Card key={produto.id} className="shadow-soft hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <Package className="h-6 w-6 text-primary" />
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center overflow-hidden">
+                    {produto.image ? (
+                      <img 
+                        src={produto.image} 
+                        alt={produto.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement?.querySelector('svg')?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    <Package className={`h-6 w-6 text-primary ${produto.image ? 'hidden' : ''}`} />
                   </div>
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${

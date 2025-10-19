@@ -3,38 +3,41 @@ import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Package, MapPin, Calendar, User } from "lucide-react";
+import { Search, Package, MapPin, Calendar, User, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { 
+  trackBatchByCode, 
+  TrackingInfo,
+  formatDate,
+  formatDateTime,
+  getProductImageUrl,
+  getBatchStatus,
+  getStatusColor
+} from "@/api/traking";
 
 const Rastrear = () => {
   const [codigo, setCodigo] = useState("");
-  const [resultado, setResultado] = useState<any>(null);
+  const [resultado, setResultado] = useState<TrackingInfo | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleRastrear = async () => {
-    if (!codigo) {
+    if (!codigo.trim()) {
       toast.error("Digite um código de lote");
       return;
     }
 
     setLoading(true);
-
-    // Simulação de busca
-    setTimeout(() => {
-      setResultado({
-        code: "LOT2024001",
-        product: "Tomate Cereja",
-        variedade: "Sweet Million",
-        produtor: "João Silva - Fazenda Boa Vista",
-        talhao: "Talhão A1",
-        dt_plantio: "2024-01-05",
-        dt_colheita: "2024-03-15",
-        dt_expedition: "2024-03-18",
-        producao: 2500,
-        localizacao: "São Paulo, SP",
-      });
+    try {
+      const data = await trackBatchByCode(codigo.trim());
+      setResultado(data);
+      toast.success("Lote encontrado com sucesso!");
+    } catch (error: any) {
+      console.error("Erro ao rastrear lote:", error);
+      toast.error(error.message || "Lote não encontrado. Verifique o código e tente novamente.");
+      setResultado(null);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -60,7 +63,11 @@ const Rastrear = () => {
                   className="text-lg"
                 />
                 <Button onClick={handleRastrear} disabled={loading} size="lg">
-                  <Search className="h-5 w-5 mr-2" />
+                  {loading ? (
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  ) : (
+                    <Search className="h-5 w-5 mr-2" />
+                  )}
                   {loading ? "Buscando..." : "Rastrear"}
                 </Button>
               </div>
@@ -73,73 +80,160 @@ const Rastrear = () => {
               <Card className="shadow-soft">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <Package className="h-8 w-8 text-primary" />
-                    </div>
+                    {resultado.product.image ? (
+                      <img 
+                        src={getProductImageUrl(resultado.product.image)} 
+                        alt={resultado.product.name}
+                        className="w-24 h-24 object-cover rounded-lg"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <Package className="h-12 w-12 text-primary" />
+                      </div>
+                    )}
                     <div className="flex-1">
-                      <h2 className="text-2xl font-bold mb-2">{resultado.product}</h2>
-                      <p className="text-muted-foreground mb-1">
-                        Variedade: {resultado.variedade}
-                      </p>
-                      <p className="text-sm font-mono bg-muted px-3 py-1 rounded inline-block">
-                        {resultado.code}
-                      </p>
+                      <div className="flex items-center justify-between mb-2">
+                        <h2 className="text-2xl font-bold">{resultado.product.name}</h2>
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(getBatchStatus(resultado.batch))}`}>
+                          {getBatchStatus(resultado.batch)}
+                        </span>
+                      </div>
+                      {resultado.product.comertial_name && (
+                        <p className="text-muted-foreground mb-1">
+                          Nome Comercial: {resultado.product.comertial_name}
+                        </p>
+                      )}
+                      {resultado.product.variedade_cultivar && (
+                        <p className="text-muted-foreground mb-1">
+                          Variedade: {resultado.product.variedade_cultivar}
+                        </p>
+                      )}
+                      {resultado.product.description && (
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {resultado.product.description}
+                        </p>
+                      )}
+                      <div className="flex gap-2">
+                        <p className="text-sm font-mono bg-muted px-3 py-1 rounded inline-block">
+                          Lote: {resultado.batch.code}
+                        </p>
+                        <p className="text-sm font-mono bg-muted px-3 py-1 rounded inline-block">
+                          Produto: {resultado.product.code}
+                        </p>
+                      </div>
+                      {resultado.batch.talhao && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Talhão: {resultado.batch.talhao}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Timeline */}
+              {/* Timeline e Estatísticas */}
               <Card className="shadow-soft">
                 <CardContent className="p-6">
                   <h3 className="text-xl font-semibold mb-6">Histórico do Lote</h3>
-                  <div className="space-y-6">
-                    <div className="flex gap-4">
-                      <div className="flex flex-col items-center">
-                        <div className="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center">
-                          <Calendar className="h-5 w-5 text-secondary" />
-                        </div>
-                        <div className="w-0.5 h-full bg-border mt-2"></div>
-                      </div>
-                      <div className="flex-1 pb-6">
-                        <p className="font-semibold text-secondary">Plantio</p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(resultado.dt_plantio).toLocaleDateString("pt-BR")}
-                        </p>
-                        <p className="text-sm mt-1">Local: {resultado.talhao}</p>
-                      </div>
+                  
+                  {/* Estatísticas */}
+                  <div className="grid grid-cols-3 gap-4 mb-8 p-4 bg-muted/50 rounded-lg">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-primary">{resultado.batch.producao}</p>
+                      <p className="text-sm text-muted-foreground">kg Produzidos</p>
                     </div>
-
-                    <div className="flex gap-4">
-                      <div className="flex flex-col items-center">
-                        <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
-                          <Calendar className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="w-0.5 h-full bg-border mt-2"></div>
-                      </div>
-                      <div className="flex-1 pb-6">
-                        <p className="font-semibold text-primary">Colheita</p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(resultado.dt_colheita).toLocaleDateString("pt-BR")}
-                        </p>
-                        <p className="text-sm mt-1">Produção: {resultado.producao} kg</p>
-                      </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-primary">{resultado.stats.total_movements}</p>
+                      <p className="text-sm text-muted-foreground">Movimentações</p>
                     </div>
-
-                    <div className="flex gap-4">
-                      <div className="flex flex-col items-center">
-                        <div className="w-10 h-10 bg-accent/20 rounded-full flex items-center justify-center">
-                          <Calendar className="h-5 w-5 text-accent" />
-                        </div>
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-accent">Expedição</p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(resultado.dt_expedition).toLocaleDateString("pt-BR")}
-                        </p>
-                      </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-primary">
+                        {resultado.stats.days_since_planting !== null ? resultado.stats.days_since_planting : '-'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">Dias desde Plantio</p>
                     </div>
                   </div>
+
+                  {/* Timeline */}
+                  <div className="space-y-6">
+                    {resultado.batch.dt_plantio && (
+                      <div className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                          <div className="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center">
+                            <Calendar className="h-5 w-5 text-secondary" />
+                          </div>
+                          {(resultado.batch.dt_colheita || resultado.batch.dt_expedition) && (
+                            <div className="w-0.5 h-full bg-border mt-2"></div>
+                          )}
+                        </div>
+                        <div className="flex-1 pb-6">
+                          <p className="font-semibold text-secondary">Plantio</p>
+                          <p className="text-sm text-muted-foreground">
+                            {formatDate(resultado.batch.dt_plantio)}
+                          </p>
+                          {resultado.batch.talhao && (
+                            <p className="text-sm mt-1">Local: {resultado.batch.talhao}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {resultado.batch.dt_colheita && (
+                      <div className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                          <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+                            <Calendar className="h-5 w-5 text-primary" />
+                          </div>
+                          {resultado.batch.dt_expedition && (
+                            <div className="w-0.5 h-full bg-border mt-2"></div>
+                          )}
+                        </div>
+                        <div className="flex-1 pb-6">
+                          <p className="font-semibold text-primary">Colheita</p>
+                          <p className="text-sm text-muted-foreground">
+                            {formatDate(resultado.batch.dt_colheita)}
+                          </p>
+                          <p className="text-sm mt-1">Produção: {resultado.batch.producao} kg</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {resultado.batch.dt_expedition && (
+                      <div className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                          <div className="w-10 h-10 bg-accent/20 rounded-full flex items-center justify-center">
+                            <Calendar className="h-5 w-5 text-accent" />
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-accent">Expedição</p>
+                          <p className="text-sm text-muted-foreground">
+                            {formatDate(resultado.batch.dt_expedition)}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Movimentações */}
+                  {resultado.movements.length > 0 && (
+                    <div className="mt-8 pt-6 border-t">
+                      <h4 className="font-semibold mb-4">Movimentações Registradas</h4>
+                      <div className="space-y-3">
+                        {resultado.movements.map((movimento) => (
+                          <div key={movimento.id} className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                            <div>
+                              <p className="font-medium">{movimento.tipo_movimentacao}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {formatDateTime(movimento.created_at)}
+                              </p>
+                            </div>
+                            <p className="font-semibold">{movimento.quantidade} kg</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -150,11 +244,16 @@ const Rastrear = () => {
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <User className="h-5 w-5 text-muted-foreground" />
-                      <span>{resultado.produtor}</span>
+                      <div>
+                        <p className="font-medium">{resultado.producer.nome}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {resultado.producer.tipo_pessoa === 'F' ? 'Pessoa Física' : 'Pessoa Jurídica'}
+                        </p>
+                      </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <MapPin className="h-5 w-5 text-muted-foreground" />
-                      <span>{resultado.localizacao}</span>
+                      <Package className="h-5 w-5 text-muted-foreground" />
+                      <span>Perfil: {resultado.producer.tipo_perfil}</span>
                     </div>
                   </div>
                 </CardContent>

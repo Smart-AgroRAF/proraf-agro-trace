@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Boxes, Calendar, MapPin, Package, Activity } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
 const LoteDetalhes = () => {
   const { id } = useParams();
@@ -90,10 +91,18 @@ const LoteDetalhes = () => {
                 </div>
                 <div className="flex justify-center pt-4 border-t">
                   <div className="flex flex-col items-center gap-2">
-                    <p className="text-sm text-muted-foreground">QR Code do Lote</p>
-                    <div className="w-40 h-40 bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-border">
-                      <span className="text-xs text-muted-foreground">QR Code</span>
+                    <p className="text-sm text-muted-foreground">QR Code para Rastreamento</p>
+                    <div className="p-4 bg-white rounded-lg">
+                      <QRCodeSVG 
+                        value={`${window.location.origin}/rastrear/${lote.code}`}
+                        size={160}
+                        level="H"
+                        includeMargin={true}
+                      />
                     </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Escaneie para rastrear
+                    </p>
                   </div>
                 </div>
               </CardContent>

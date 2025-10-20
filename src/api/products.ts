@@ -18,6 +18,7 @@ export const createProduct = async (data: ProductCreate): Promise<Product> => {
 
 /**
  * Cria um novo produto com upload de imagem
+ * 
  */
 export const createProductWithImage = async (
   data: ProductCreateWithImage

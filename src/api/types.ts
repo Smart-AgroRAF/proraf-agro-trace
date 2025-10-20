@@ -71,6 +71,7 @@ export interface Product {
   status: boolean;
   image?: string;
   code: string;
+  user_id: number;
   created_at: string;
   updated_at: string;
 }

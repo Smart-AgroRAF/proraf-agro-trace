@@ -14,8 +14,10 @@ import { getProductById, updateProduct, deleteProduct } from "@/api/products";
 import { listBatchesByProduct } from "@/api/batches";
 import type { Product, Batch, ProductUpdate } from "@/api/types";
 import { useToast } from "@/hooks/use-toast";
+import { get } from "http";
 
 const ProdutoDetalhes = () => {
+  
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -27,7 +29,27 @@ const ProdutoDetalhes = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
+
+  const [imageError, setImageError] = useState(false);
+          {console.log(produto)}
   
+const getImageUrl = (imagePath: string | null) => {
+    if (!imagePath) return null;
+    
+    // Se já é uma URL completa, retorna como está
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    
+    // Se é um caminho relativo, constrói a URL completa
+    // Use import.meta.env para Vite ou configure a variável de ambiente
+    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    return `${baseURL}${imagePath}`;
+  };
+
+  useEffect(() => {
+    setImageError(false);
+  }, [produto?.image]);
   // Form state for editing
   const [editForm, setEditForm] = useState<ProductUpdate>({
     name: "",
@@ -103,7 +125,7 @@ const ProdutoDetalhes = () => {
       setUpdateLoading(false);
     }
   };
-
+  
   // Handle product deletion
   const handleDelete = async () => {
     if (!produto) return;
@@ -306,22 +328,22 @@ const ProdutoDetalhes = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center overflow-hidden">
-                      {produto.image ? (
+                      {produto.image && !imageError ? (
                         <img 
-                          src={produto.image} 
+                          src={getImageUrl(produto.image)}
                           alt={produto.name}
                           className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.parentElement?.querySelector('svg')?.classList.remove('hidden');
-                          }}
+                          onError={() => setImageError(true)}
+                          onLoad={() => console.log('Imagem carregada:', getImageUrl(produto.image))}
                         />
-                      ) : null}
-                      <Package className={`h-8 w-8 text-primary ${produto.image ? 'hidden' : ''}`} />
+                      ) : (
+                        <Package className="h-8 w-8 text-primary" />
+                      )}
                     </div>
                     <div>
                       <CardTitle className="text-2xl mb-2">{produto.name}</CardTitle>
                       <p className="text-muted-foreground">{produto.comertial_name}</p>
+
                     </div>
                   </div>
                   <Badge className={produto.status ? "bg-secondary/20 text-secondary" : "bg-muted text-muted-foreground"}>

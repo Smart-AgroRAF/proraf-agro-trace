@@ -38,6 +38,7 @@ export const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/cadastro" element={<Cadastro />} />
       <Route path="/rastrear" element={<Rastrear />} />
+      <Route path="/rastrear/:codigo" element={<Rastrear />} />
       
       {/* Rotas Protegidas - Todos os usuários autenticados */}
       <Route 

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,19 +17,21 @@ import {
 } from "@/api/traking";
 
 const Rastrear = () => {
+  const { codigo: codigoUrl } = useParams();
   const [codigo, setCodigo] = useState("");
   const [resultado, setResultado] = useState<TrackingInfo | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleRastrear = async () => {
-    if (!codigo.trim()) {
+  const handleRastrear = async (codigoParam?: string) => {
+    const codigoParaBuscar = codigoParam || codigo;
+    if (!codigoParaBuscar.trim()) {
       toast.error("Digite um código de lote");
       return;
     }
 
     setLoading(true);
     try {
-      const data = await trackBatchByCode(codigo.trim());
+      const data = await trackBatchByCode(codigoParaBuscar.trim());
       setResultado(data);
       toast.success("Lote encontrado com sucesso!");
     } catch (error: any) {
@@ -39,6 +42,13 @@ const Rastrear = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (codigoUrl) {
+      setCodigo(codigoUrl);
+      handleRastrear(codigoUrl);
+    }
+  }, [codigoUrl]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -62,7 +72,7 @@ const Rastrear = () => {
                   onKeyPress={(e) => e.key === "Enter" && handleRastrear()}
                   className="text-lg"
                 />
-                <Button onClick={handleRastrear} disabled={loading} size="lg">
+                <Button onClick={() => handleRastrear()} disabled={loading} size="lg">
                   {loading ? (
                     <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                   ) : (

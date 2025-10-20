@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { createBatch } from "@/api/batches";
-import { listProducts } from "@/api/products";
+import { listProductsByUser } from "@/api/products";
 import type { BatchCreate, Product } from "@/api/types";
 
 const NovoLote = () => {
@@ -57,7 +57,7 @@ const NovoLote = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await listProducts();
+        const data = await listProductsByUser();
         setProdutos(data);
       } catch (error: any) {
         toast.error("Erro ao carregar produtos");

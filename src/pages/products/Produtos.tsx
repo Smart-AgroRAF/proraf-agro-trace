@@ -13,7 +13,7 @@ const Produtos = () => {
   const [produtos, setProdutos] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
-  
+
   const getImageUrl = (imagePath: string): string => {
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath; // Já é uma URL completa
@@ -84,7 +84,7 @@ const Produtos = () => {
             {filteredProdutos.map((produto) => (
             <Card 
               key={produto.id} 
-              className="shadow-soft hover:shadow-lg transition-shadow overflow-hidden relative h-64"
+              className=" hover:shadow-soft hover:shadow-lg hover:transition-shadow overflow-hidden relative h-64"
               style={{
                 backgroundImage: produto.image 
                   ? `url(${getImageUrl(produto.image)})` 

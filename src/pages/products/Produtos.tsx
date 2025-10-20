@@ -82,43 +82,55 @@ const Produtos = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProdutos.map((produto) => (
-            <Card key={produto.id} className="shadow-soft hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center overflow-hidden">
-                      {produto.image && !imageError ? (
-                        <img 
-                          src={getImageUrl(produto.image)}
-                          alt={produto.name}
-                          className="w-full h-full object-cover"
-                          onError={() => setImageError(true)}
-                          onLoad={() => console.log('Imagem carregada:', getImageUrl(produto.image))}
-                        />
-                      ) : (
-                        <Package className="h-8 w-8 text-primary" />
-                      )}
-                  </div>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      produto.status
-                        ? "bg-secondary/20 text-secondary"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {produto.status ? "Ativo" : "Inativo"}
-                  </span>
+            <Card 
+              key={produto.id} 
+              className="shadow-soft hover:shadow-lg transition-shadow overflow-hidden relative h-64"
+              style={{
+                backgroundImage: produto.image 
+                  ? `url(${getImageUrl(produto.image)})` 
+                  : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+            >
+              {/* Dark overlay for text visibility */}
+              <div className="absolute inset-0 bg-black/60" />
+              
+              {/* No image fallback */}
+              {!produto.image && (
+                <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                  <Package className="h-20 w-20 text-primary/30" />
                 </div>
-                <h3 className="font-semibold text-lg mb-1">{produto.name}</h3>
-                <p className="text-sm text-muted-foreground mb-2">{produto.comertial_name || "Sem nome comercial"}</p>
-                <p className="text-xs text-muted-foreground mb-4">
-                  Variedade: {produto.variedade_cultivar || "Não especificada"}
-                </p>
+              )}
+              
+              <CardContent className="p-6 relative z-10 h-full flex flex-col justify-between">
+                <div>
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                      <Package className="h-6 w-6 text-white" />
+                    </div>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm ${
+                        produto.status
+                          ? "bg-green-500/80 text-white"
+                          : "bg-gray-500/80 text-white"
+                      }`}
+                    >
+                      {produto.status ? "Ativo" : "Inativo"}
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-lg mb-1 text-white">{produto.name}</h3>
+                  <p className="text-sm text-white/90 mb-2">{produto.comertial_name || "Sem nome comercial"}</p>
+                  <p className="text-xs text-white/80 mb-4">
+                    Variedade: {produto.variedade_cultivar || "Não especificada"}
+                  </p>
+                </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono bg-muted px-2 py-1 rounded">
+                  <span className="text-xs font-mono bg-white/20 backdrop-blur-sm text-white px-2 py-1 rounded">
                     {produto.code}
                   </span>
                   <Link to={`/produtos/${produto.id}`}>
-                    <Button variant="outline" size="sm">
+                    <Button variant="secondary" size="sm" className="bg-white/90 hover:bg-white text-primary">
                       Ver Detalhes
                     </Button>
                   </Link>

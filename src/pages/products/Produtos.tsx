@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { Plus, Search, Package } from "lucide-react";
 import { useState, useEffect } from "react";
-import { listProducts } from "@/api/products";
+import { listProductsByUser } from "@/api/products";
 import type { Product } from "@/api/types";
 import { toast } from "sonner";
 
@@ -16,7 +16,7 @@ const Produtos = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await listProducts();
+        const data = await listProductsByUser();
         setProdutos(data);
       } catch (error: any) {
         toast.error("Erro ao carregar produtos");

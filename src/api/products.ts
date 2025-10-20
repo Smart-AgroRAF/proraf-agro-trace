@@ -73,6 +73,14 @@ export const listProducts = async (filters?: ProductFilters): Promise<Product[]>
 
   return apiClient.get<Product[]>(endpoint);
 };
+/**
+ * Lista produtos de um usuário específico
+*/
+export const listProductsByUser = async (): Promise<Product[]> => {
+  return apiClient.get<Product[]>(`/user/me/products/`);
+}
+
+
 
 /**
  * Busca um produto por ID

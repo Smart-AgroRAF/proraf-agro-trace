@@ -127,11 +127,15 @@ export interface MovementCreate {
   tipo_movimentacao: string;
   quantidade: number;
   batch_id: number;
+  observacoes?: string;
+  localizacao?: string;
 }
 
 export interface MovementUpdate {
   tipo_movimentacao?: string;
   quantidade?: number;
+  observacoes?: string;
+  localizacao?: string;
 }
 
 export interface Movement {
@@ -140,6 +144,8 @@ export interface Movement {
   quantidade: number;
   batch_id: number;
   user_id: number;
+  observacoes?: string;
+  localizacao?: string;
   created_at: string;
   updated_at: string;
 }

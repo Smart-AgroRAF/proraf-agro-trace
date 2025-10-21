@@ -2,48 +2,141 @@ import { Navbar } from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Boxes, Calendar, MapPin, Package, Activity } from "lucide-react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, Boxes, Calendar, MapPin, Package, Activity, Pencil, Trash2 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import { useApi, useMutation } from "@/hooks/useApi";
+import { getBatchById, deleteBatch, updateBatch } from "@/api/batches";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
 
 const LoteDetalhes = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    dt_colheita: "",
+    dt_expedition: "",
+    producao: 0,
+    talhao: "",
+  });
 
-  // Mock data - substituir por dados reais futuramente
-  const lote = {
-    id: Number(id),
-    code: "LOT2024001",
-    product: "Tomate Cereja",
-    productId: 1,
-    dt_plantio: "2024-01-05",
-    dt_colheita: "2024-03-15",
-    dt_expedition: null,
-    status: "Colheita",
-    talhao: "Talhão A1",
-    producao: 2500,
-    area: "500m²",
-    movimentacoes: [
-      { id: 1, tipo: "Plantio", data: "2024-01-05", responsavel: "João Silva" },
-      { id: 2, tipo: "Tratamento", data: "2024-01-08", responsavel: "Ana Paula" },
-      { id: 3, tipo: "Colheita", data: "2024-03-15", responsavel: "João Silva" },
-    ],
+  // Buscar dados do lote
+  const { data: lote, loading, error } = useApi(
+    () => getBatchById(Number(id)),
+    [id]
+  );
+
+  // Mutation para deletar
+  const { mutate: deleteBatchMutation, loading: deleteLoading } = useMutation(deleteBatch);
+
+  // Mutation para atualizar
+  const { mutate: updateBatchMutation, loading: updateLoading } = useMutation(
+    (data: { batchId: number; updateData: any }) => updateBatch(data.batchId, data.updateData)
+  );
+
+  const handleDelete = async () => {
+    try {
+      await deleteBatchMutation(Number(id));
+      toast({
+        title: "Lote deletado",
+        description: "O lote foi removido com sucesso.",
+      });
+      navigate("/lotes");
+    } catch (error) {
+      toast({
+        title: "Erro ao deletar",
+        description: "Não foi possível deletar o lote.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Plantio":
-        return "bg-secondary/20 text-secondary";
-      case "Colheita":
-        return "bg-primary/20 text-primary";
-      case "Expedido":
-        return "bg-muted text-muted-foreground";
-      default:
-        return "bg-muted text-muted-foreground";
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await updateBatchMutation({
+        batchId: Number(id),
+        updateData: {
+          dt_colheita: editForm.dt_colheita || undefined,
+          dt_expedition: editForm.dt_expedition || undefined,
+          producao: editForm.producao || undefined,
+          talhao: editForm.talhao || undefined,
+        },
+      });
+      
+      toast({
+        title: "Lote atualizado",
+        description: "As informações foram atualizadas com sucesso.",
+      });
+      setIsEditOpen(false);
+      window.location.reload();
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar",
+        description: "Não foi possível atualizar o lote.",
+        variant: "destructive",
+      });
     }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center h-64">
+            <p className="text-muted-foreground">Carregando...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !lote) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col items-center justify-center h-64 gap-4">
+            <p className="text-destructive">Erro ao carregar o lote</p>
+            <Button onClick={() => navigate("/lotes")}>Voltar para Lotes</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const getStatusBadge = () => {
+    if (lote.dt_expedition) return <Badge className="bg-muted text-muted-foreground">Expedido</Badge>;
+    if (lote.dt_colheita) return <Badge className="bg-primary/20 text-primary">Colheita</Badge>;
+    return <Badge className="bg-secondary/20 text-secondary">Plantio</Badge>;
   };
 
   return (
     <div className="min-h-screen bg-background">
+      <Navbar />
       <div className="container mx-auto px-4 py-8">
         <Link to="/lotes">
           <Button variant="ghost" className="mb-6">
@@ -64,12 +157,89 @@ const LoteDetalhes = () => {
                     </div>
                     <div>
                       <CardTitle className="text-2xl mb-2">{lote.code}</CardTitle>
-                      <Link to={`/produtos/${lote.productId}`} className="text-primary hover:underline">
-                        {lote.product}
+                      <Link to={`/produtos/${lote.product_id}`} className="text-primary hover:underline">
+                        Produto #{lote.product_id}
                       </Link>
                     </div>
                   </div>
-                  <Badge className={getStatusColor(lote.status)}>{lote.status}</Badge>
+                  <div className="flex items-center gap-2">
+                    {getStatusBadge()}
+                    <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="icon">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Editar Lote</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleEdit} className="space-y-4">
+                          <div>
+                            <Label htmlFor="talhao">Talhão</Label>
+                            <Input
+                              id="talhao"
+                              type="text"
+                              value={editForm.talhao}
+                              onChange={(e) => setEditForm({ ...editForm, talhao: e.target.value })}
+                              placeholder="Ex: Talhão A1"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="dt_colheita">Data de Colheita</Label>
+                            <Input
+                              id="dt_colheita"
+                              type="date"
+                              value={editForm.dt_colheita}
+                              onChange={(e) => setEditForm({ ...editForm, dt_colheita: e.target.value })}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="dt_expedition">Data de Expedição</Label>
+                            <Input
+                              id="dt_expedition"
+                              type="date"
+                              value={editForm.dt_expedition}
+                              onChange={(e) => setEditForm({ ...editForm, dt_expedition: e.target.value })}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="producao">Produção (kg)</Label>
+                            <Input
+                              id="producao"
+                              type="number"
+                              value={editForm.producao}
+                              onChange={(e) => setEditForm({ ...editForm, producao: Number(e.target.value) })}
+                            />
+                          </div>
+                          <Button type="submit" disabled={updateLoading} className="w-full">
+                            {updateLoading ? "Salvando..." : "Salvar"}
+                          </Button>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="icon">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta ação não pode ser desfeita. O lote será removido permanentemente.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDelete} disabled={deleteLoading}>
+                            {deleteLoading ? "Deletando..." : "Deletar"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -78,14 +248,14 @@ const LoteDetalhes = () => {
                     <MapPin className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="text-sm text-muted-foreground">Talhão</p>
-                      <p className="font-medium">{lote.talhao}</p>
+                      <p className="font-medium">{lote.talhao || "Não informado"}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <Package className="h-5 w-5 text-muted-foreground" />
                     <div>
-                      <p className="text-sm text-muted-foreground">Área</p>
-                      <p className="font-medium">{lote.area}</p>
+                      <p className="text-sm text-muted-foreground">Produção</p>
+                      <p className="font-medium">{lote.producao ? `${lote.producao} kg` : "Não informado"}</p>
                     </div>
                   </div>
                 </div>
@@ -114,36 +284,9 @@ const LoteDetalhes = () => {
                 <CardTitle>Histórico de Movimentações</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {lote.movimentacoes.map((mov, index) => (
-                    <div key={mov.id} className="flex gap-4">
-                      <div className="flex flex-col items-center">
-                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                          <Activity className="h-5 w-5 text-primary" />
-                        </div>
-                        {index < lote.movimentacoes.length - 1 && (
-                          <div className="w-0.5 h-12 bg-border mt-2" />
-                        )}
-                      </div>
-                      <div className="flex-1 pb-4">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="font-medium">{mov.tipo}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(mov.data).toLocaleDateString("pt-BR")}
-                          </p>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Responsável: {mov.responsavel}
-                        </p>
-                        <Link to={`/movimentacoes/${mov.id}`}>
-                          <Button variant="link" size="sm" className="p-0 h-auto">
-                            Ver detalhes
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-muted-foreground text-center py-8">
+                  As movimentações serão exibidas quando vinculadas ao lote
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -196,12 +339,14 @@ const LoteDetalhes = () => {
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Produzido</span>
-                  <span className="font-semibold text-2xl">{lote.producao} kg</span>
+                  <span className="font-semibold text-2xl">
+                    {lote.producao ? `${lote.producao} kg` : "Não informado"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Produtividade</span>
+                  <span className="text-muted-foreground">Status</span>
                   <span className="font-semibold">
-                    {(lote.producao / parseFloat(lote.area)).toFixed(2)} kg/m²
+                    {lote.status ? "Ativo" : "Inativo"}
                   </span>
                 </div>
               </CardContent>

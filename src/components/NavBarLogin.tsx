@@ -67,7 +67,7 @@ export const NavbarLogin = ({ isAuthenticated = false }: NavbarProps) => {
     <nav className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/dashboard" className="flex items-center gap-2">
             <img src={prorafLogo} alt="ProRAF" className="h-10" />
           </Link>
 

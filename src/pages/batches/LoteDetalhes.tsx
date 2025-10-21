@@ -104,7 +104,7 @@ const LoteDetalhes = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
+        
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center h-64">
             <p className="text-muted-foreground">Carregando...</p>
@@ -117,7 +117,7 @@ const LoteDetalhes = () => {
   if (error || !lote) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
+        
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col items-center justify-center h-64 gap-4">
             <p className="text-destructive">Erro ao carregar o lote</p>
@@ -136,7 +136,7 @@ const LoteDetalhes = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+     
       <div className="container mx-auto px-4 py-8">
         <Link to="/lotes">
           <Button variant="ghost" className="mb-6">

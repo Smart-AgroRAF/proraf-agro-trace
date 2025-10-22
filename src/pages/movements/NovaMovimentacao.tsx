@@ -26,12 +26,10 @@ const NovaMovimentacao = () => {
   });
 
   const tiposMovimentacao = [
-    "Plantio",
-    "Tratamento",
-    "Irrigação",
-    "Colheita",
-    "Expedição",
-  ];
+    "Produção",
+    "Transporte",
+    "Armazenamento",
+    ];
 
   useEffect(() => {
     const fetchBatches = async () => {

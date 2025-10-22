@@ -107,7 +107,7 @@ const Movimentacoes = () => {
                   <div className="flex items-center gap-6">
                     <div className="text-right">
                       <p className="text-sm text-muted-foreground">Quantidade</p>
-                      <p className="font-semibold">{mov.quantidade} kg</p>
+                      <p className="font-semibold">{Number(mov.quantidade).toFixed(2)} kg</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-muted-foreground">Data</p>

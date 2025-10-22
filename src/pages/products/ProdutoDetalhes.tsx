@@ -390,7 +390,7 @@ const getImageUrl = (imagePath: string | null) => {
                         <div>
                           <p className="font-medium">{lote.code}</p>
                           <p className="text-sm text-muted-foreground">
-                            Produção: {lote.producao || 0} kg
+                            Produção: {Number(lote.producao).toFixed(2) || 0} kg
                           </p>
                           {lote.talhao && (
                             <p className="text-sm text-muted-foreground">
@@ -476,8 +476,10 @@ const getImageUrl = (imagePath: string | null) => {
                     <p className="text-sm text-muted-foreground">Lotes Ativos</p>
                   </div>
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
-                    <p className="text-2xl font-bold text-green-600">
-                      {lotes.reduce((sum, lote) => sum + (lote.producao || 0), 0)} kg
+                    <p className="text-2xl font-bold text-yellow-600">
+                      {lotes.map(
+                        l => l.producao ? Number(l.producao) : 0
+                      ).reduce((a, b) => a + b, 0).toFixed(2)} kg
                     </p>
                     <p className="text-sm text-muted-foreground">Produção Total</p>
                   </div>

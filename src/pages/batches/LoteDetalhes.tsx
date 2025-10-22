@@ -185,15 +185,7 @@ const LoteDetalhes = () => {
                               placeholder="Ex: Talhão A1"
                             />
                           </div>
-                          <div>
-                            <Label htmlFor="dt_colheita">Data de Colheita</Label>
-                            <Input
-                              id="dt_colheita"
-                              type="date"
-                              value={editForm.dt_colheita}
-                              onChange={(e) => setEditForm({ ...editForm, dt_colheita: e.target.value })}
-                            />
-                          </div>
+                         
                           <div>
                             <Label htmlFor="dt_expedition">Data de Expedição</Label>
                             <Input
@@ -255,7 +247,7 @@ const LoteDetalhes = () => {
                     <Package className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="text-sm text-muted-foreground">Produção</p>
-                      <p className="font-medium">{lote.producao ? `${lote.producao} kg` : "Não informado"}</p>
+                      <p className="font-medium">{lote.producao ? `${Number(lote.producao).toFixed(2)} kg` : "Não informado"}</p>
                     </div>
                   </div>
                 </div>
@@ -298,15 +290,7 @@ const LoteDetalhes = () => {
                 <CardTitle>Datas Importantes</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Data de Plantio</p>
-                    <p className="font-medium">
-                      {new Date(lote.dt_plantio).toLocaleDateString("pt-BR")}
-                    </p>
-                  </div>
-                </div>
+                
                 {lote.dt_colheita && (
                   <div className="flex items-center gap-3">
                     <Calendar className="h-5 w-5 text-muted-foreground" />
@@ -340,7 +324,7 @@ const LoteDetalhes = () => {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Produzido</span>
                   <span className="font-semibold text-2xl">
-                    {lote.producao ? `${lote.producao} kg` : "Não informado"}
+                    {lote.producao ? `${Number(lote.producao).toFixed(2)} kg` : "Não informado"}
                   </span>
                 </div>
                 <div className="flex justify-between">

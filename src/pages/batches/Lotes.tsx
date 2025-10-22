@@ -113,14 +113,11 @@ const Lotes = () => {
                 </div>
 
                 <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Talhão:</span>
-                    <span className="font-medium">{lote.talhao || "Não informado"}</span>
-                  </div>
-                  {lote.dt_plantio && (
+        
+                  {lote.dt_expedition && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Plantio:</span>
-                      <span>{new Date(lote.dt_plantio).toLocaleDateString("pt-BR")}</span>
+                      <span className="text-muted-foreground">Expedição:</span>
+                      <span>{new Date(lote.dt_expedition).toLocaleDateString("pt-BR")}</span>
                     </div>
                   )}
                   {lote.dt_colheita && (
@@ -131,7 +128,7 @@ const Lotes = () => {
                   )}
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Produção:</span>
-                    <span className="font-medium">{lote.producao} kg</span>
+                    <span className="font-medium">{Number(lote.producao).toFixed(2)} kg</span>
                   </div>
                 </div>
 

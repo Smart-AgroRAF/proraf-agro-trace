@@ -2,20 +2,15 @@ import { Navbar } from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Package, Boxes, ArrowRightLeft, Plus, TrendingUp } from "lucide-react";
+import { Package, Boxes, ArrowRightLeft, Plus } from "lucide-react";
+import { useApi } from "@/hooks/useApi";
+import { getUserStats, getUserRecentActivity } from "@/api/user";
+import { formatNumber } from "@/lib/utils";
+import { format } from "date-fns";
 
 const Dashboard = () => {
-  const stats = [
-    { title: "Produtos Cadastrados", value: "24", icon: Package, color: "text-primary" },
-    { title: "Lotes Ativos", value: "15", icon: Boxes, color: "text-secondary" },
-    { title: "Movimentações (mês)", value: "48", icon: ArrowRightLeft, color: "text-accent" },
-  ];
-
-  const recentBatches = [
-    { code: "LOT2024001", product: "Tomate Cereja", status: "Colheita", date: "15/01/2024" },
-    { code: "LOT2024002", product: "Alface Crespa", status: "Plantio", date: "10/01/2024" },
-    { code: "LOT2024003", product: "Cenoura", status: "Expedição", date: "18/01/2024" },
-  ];
+  const { data: stats, loading: statsLoading } = useApi(getUserStats);
+  const { data: recentActivity, loading: activityLoading } = useApi(() => getUserRecentActivity(3));
 
   return (
     <div className="min-h-screen bg-background">
@@ -63,21 +58,42 @@ const Dashboard = () => {
           </Link>
         </div>
         {/* Stats Grid */}
-        <div className=""> 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 ">
-          {stats.map((stat, index) => (
-            <Card key={index} className="shadow-soft hover:shadow-lg transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{stat.value}</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <Card className="shadow-soft hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Produtos Cadastrados</CardTitle>
+              <Package className="h-5 w-5 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">
+                {statsLoading ? "..." : stats?.products?.unique_products || 0}
+              </div>
+            </CardContent>
+          </Card>
 
+          <Card className="shadow-soft hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Lotes Cadastrados</CardTitle>
+              <Boxes className="h-5 w-5 text-secondary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">
+                {statsLoading ? "..." : stats?.batches?.total || 0}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-soft hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Movimentações Totais</CardTitle>
+              <ArrowRightLeft className="h-5 w-5 text-accent" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">
+                {statsLoading ? "..." : stats?.movements?.total || 0}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Recent Batches */}
@@ -86,20 +102,27 @@ const Dashboard = () => {
             <CardTitle>Lotes Recentes</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {recentBatches.map((batch, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-gradient-card rounded-lg">
-                  <div>
-                    <p className="font-semibold">{batch.code}</p>
-                    <p className="text-sm text-muted-foreground">{batch.product}</p>
+            {activityLoading ? (
+              <p className="text-muted-foreground text-center py-4">Carregando...</p>
+            ) : recentActivity?.recent_batches && recentActivity.recent_batches.length > 0 ? (
+              <div className="space-y-4">
+                {recentActivity.recent_batches.map((batch) => (
+                  <div key={batch.id} className="flex items-center justify-between p-4 bg-gradient-card rounded-lg">
+                    <div>
+                      <p className="font-semibold">{batch.code}</p>
+                      <p className="text-sm text-muted-foreground">Produto ID: {batch.product_id}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">
+                        {format(new Date(batch.created_at), "dd/MM/yyyy")}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-primary">{batch.status}</p>
-                    <p className="text-sm text-muted-foreground">{batch.date}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-center py-4">Nenhum lote cadastrado ainda</p>
+            )}
             <Link to="/lotes">
               <Button variant="outline" className="w-full mt-4">
                 Ver Todos os Lotes

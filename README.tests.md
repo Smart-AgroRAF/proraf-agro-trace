@@ -76,6 +76,8 @@ src/
 - ✅ Função `cn()` para combinar classes
 - ✅ Remover duplicatas de classes Tailwind
 - ✅ Classes condicionais
+- ✅ Função `formatNumber()` para formatar números com 2 casas decimais
+- ✅ Lidar com valores undefined/null/inválidos
 
 ## 🎯 Cobertura de Testes
 

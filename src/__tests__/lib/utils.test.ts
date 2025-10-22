@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cn } from '@/lib/utils';
+import { cn, formatNumber } from '@/lib/utils';
 
 describe('cn (className utility)', () => {
   it('deve combinar classes simples', () => {
@@ -40,5 +40,33 @@ describe('cn (className utility)', () => {
 
   it('deve retornar string vazia para entrada vazia', () => {
     expect(cn()).toBe('');
+  });
+});
+
+describe('formatNumber', () => {
+  it('deve formatar números com 2 casas decimais', () => {
+    expect(formatNumber(123.456)).toBe('123.46');
+    expect(formatNumber(100)).toBe('100.00');
+    expect(formatNumber(0.1)).toBe('0.10');
+  });
+
+  it('deve formatar strings numéricas', () => {
+    expect(formatNumber('123.456')).toBe('123.46');
+    expect(formatNumber('100')).toBe('100.00');
+  });
+
+  it('deve lidar com undefined e null', () => {
+    expect(formatNumber(undefined)).toBe('0.00');
+    expect(formatNumber(null as any)).toBe('0.00');
+  });
+
+  it('deve lidar com strings inválidas', () => {
+    expect(formatNumber('abc')).toBe('0.00');
+    expect(formatNumber('')).toBe('0.00');
+  });
+
+  it('deve arredondar corretamente', () => {
+    expect(formatNumber(1.555)).toBe('1.56'); // arredonda para cima
+    expect(formatNumber(1.554)).toBe('1.55'); // arredonda para baixo
   });
 });

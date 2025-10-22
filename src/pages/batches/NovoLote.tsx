@@ -21,38 +21,33 @@ const NovoLote = () => {
   const [formData, setFormData] = useState({
     code: "",
     product_id: "",
-    dt_plantio: "",
-    talhao: "",
-    registro_talhao: false,
+    dt_expedition: "",
+    producao: "",
+    unidadeMedida: "kg",
+    status: true,
   });
 
   // Função para gerar código automático do lote
-  const generateBatchCode = (productId: string, dtPlantio: string) => {
-    if (!productId || !dtPlantio) return "";
+  const generateBatchCode = (productId: string) => {
+    if (!productId) return "";
     
     // Busca o produto selecionado para usar no código
     const selectedProduct = produtos.find(p => p.id.toString() === productId);
     const productCode = selectedProduct?.code || "PROD";
     
-    // Formatar a data (YYMMDD)
-    const date = new Date(dtPlantio);
-    const year = date.getFullYear().toString().slice(-2);
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    
     // Adiciona timestamp para garantir unicidade
-    const timestamp = Date.now().toString().slice(-3);
+    const timestamp = Date.now().toString().slice(-6);
     
-    return `LOT${productCode}${year}${month}${day}${timestamp}`;
+    return `LOTE-${productCode}-${timestamp}`;
   };
 
-  // Gera código automaticamente quando produto ou data mudam (se não for código customizado)
+  // Gera código automaticamente quando produto muda (se não for código customizado)
   useEffect(() => {
-    if (!isCustomCode && formData.product_id && formData.dt_plantio) {
-      const autoCode = generateBatchCode(formData.product_id, formData.dt_plantio);
+    if (!isCustomCode && formData.product_id) {
+      const autoCode = generateBatchCode(formData.product_id);
       setFormData(prev => ({ ...prev, code: autoCode }));
     }
-  }, [formData.product_id, formData.dt_plantio, isCustomCode, produtos]);
+  }, [formData.product_id, isCustomCode, produtos]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -75,9 +70,10 @@ const NovoLote = () => {
       const batchData: BatchCreate = {
         code: formData.code,
         product_id: parseInt(formData.product_id),
-        dt_plantio: formData.dt_plantio || undefined,
-        talhao: formData.talhao || undefined,
-        registro_talhao: formData.registro_talhao,
+        dt_expedition: formData.dt_expedition,
+        producao: parseFloat(formData.producao),
+        unidadeMedida: formData.unidadeMedida,
+        status: formData.status,
       };
 
       await createBatch(batchData);
@@ -115,9 +111,9 @@ const NovoLote = () => {
                     checked={isCustomCode}
                     onCheckedChange={(checked) => {
                       setIsCustomCode(checked as boolean);
-                      if (!checked && formData.product_id && formData.dt_plantio) {
+                      if (!checked && formData.product_id) {
                         // Regenera código automaticamente quando desabilita o modo customizado
-                        const autoCode = generateBatchCode(formData.product_id, formData.dt_plantio);
+                        const autoCode = generateBatchCode(formData.product_id);
                         setFormData(prev => ({ ...prev, code: autoCode }));
                       }
                     }}
@@ -131,7 +127,7 @@ const NovoLote = () => {
                   <Label htmlFor="code">Código do Lote *</Label>
                   <Input
                     id="code"
-                    placeholder={isCustomCode ? "Ex: LOT2024001" : "Código gerado automaticamente"}
+                    placeholder={isCustomCode ? "Ex: LOTE-ALF-001" : "Código gerado automaticamente"}
                     value={formData.code}
                     onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                     disabled={!isCustomCode}
@@ -140,7 +136,7 @@ const NovoLote = () => {
                   />
                   {!isCustomCode && (
                     <p className="text-xs text-gray-500">
-                      O código será gerado automaticamente baseado no produto e data de plantio
+                      O código será gerado automaticamente baseado no produto
                     </p>
                   )}
                 </div>
@@ -166,37 +162,59 @@ const NovoLote = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dt_plantio">Data de Plantio *</Label>
+                <Label htmlFor="dt_expedition">Data de Expedição *</Label>
                 <Input
-                  id="dt_plantio"
+                  id="dt_expedition"
                   type="date"
-                  value={formData.dt_plantio}
-                  onChange={(e) => setFormData({ ...formData, dt_plantio: e.target.value })}
+                  value={formData.dt_expedition}
+                  onChange={(e) => setFormData({ ...formData, dt_expedition: e.target.value })}
                   required
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="talhao">Talhão *</Label>
-                <Input
-                  id="talhao"
-                  placeholder="Ex: Talhão A1"
-                  value={formData.talhao}
-                  onChange={(e) => setFormData({ ...formData, talhao: e.target.value })}
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="producao">Produção *</Label>
+                  <Input
+                    id="producao"
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex: 800.75"
+                    value={formData.producao}
+                    onChange={(e) => setFormData({ ...formData, producao: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="unidadeMedida">Unidade de Medida *</Label>
+                  <Select
+                    value={formData.unidadeMedida}
+                    onValueChange={(value) => setFormData({ ...formData, unidadeMedida: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="kg">kg</SelectItem>
+                      <SelectItem value="ton">ton</SelectItem>
+                      <SelectItem value="un">un</SelectItem>
+                      <SelectItem value="cx">cx</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  id="registro_talhao"
-                  checked={formData.registro_talhao}
+                  id="status"
+                  checked={formData.status}
                   onCheckedChange={(checked) =>
-                    setFormData({ ...formData, registro_talhao: checked as boolean })
+                    setFormData({ ...formData, status: checked as boolean })
                   }
                 />
-                <Label htmlFor="registro_talhao" className="cursor-pointer">
-                  Possui registro do talhão
+                <Label htmlFor="status" className="cursor-pointer">
+                  Lote ativo
                 </Label>
               </div>
 

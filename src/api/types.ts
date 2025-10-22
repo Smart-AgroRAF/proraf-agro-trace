@@ -89,6 +89,7 @@ export interface BatchCreate {
   talhao?: string;
   registro_talhao?: boolean;
   producao?: number;
+  unidadeMedida?: string;
   product_id: number;
 }
 
@@ -100,6 +101,7 @@ export interface BatchUpdate {
   talhao?: string;
   registro_talhao?: boolean;
   producao?: number;
+  unidadeMedida?: string;
 }
 
 export interface Batch {
@@ -112,6 +114,7 @@ export interface Batch {
   talhao?: string;
   registro_talhao: boolean;
   producao: number;
+  unidadeMedida?: string;
   qrcode?: string;
   product_id: number;
   user_id: number;

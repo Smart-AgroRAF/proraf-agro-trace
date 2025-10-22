@@ -60,3 +60,17 @@ export const getToken = (): string | null => {
 export const setToken = (token: string): void => {
   TokenManager.setToken(token);
 };
+
+/**
+ * Faz login via Google usando ID token
+ */
+export const loginWithGoogle = async (idToken: string): Promise<TokenResponse> => {
+  const response = await apiClient.post<TokenResponse>('/auth/google/verify-token', {
+    id_token: idToken,
+  });
+
+  // Salva o token automaticamente
+  TokenManager.setToken(response.access_token);
+
+  return response;
+};

@@ -18,6 +18,13 @@ export const updateCurrentUser = async (data: UserUpdate): Promise<User> => {
   return apiClient.put<User>('/user/me', data);
 };
 
+export const updateCurrentUserCpfCnpj = async (
+  cpfouCnpj: string,
+  tipoPessoa: 'F' | 'J'
+): Promise<User> => {
+  return apiClient.put<User>('/user/me/cpfouCnpj', { cpfouCnpj, tipoPessoa });
+};
+
 /**
  * Obtém estatísticas do usuário logado
  */

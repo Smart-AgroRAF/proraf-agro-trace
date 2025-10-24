@@ -24,6 +24,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  console.log('AuthProvider iniciando...');
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -31,14 +32,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const loadUser = async () => {
       try {
-        if (isAuthenticated()) {
+        console.log('Verificando autenticação no AuthContext...');
+        const authenticated = isAuthenticated();
+        console.log('isAuthenticated:', authenticated);
+        
+        if (authenticated) {
+          console.log('Carregando dados do usuário...');
           const userData = await getCurrentUser();
+          console.log('Usuário carregado:', userData);
           setUser(userData);
+        } else {
+          console.log('Usuário não autenticado');
+          
+          // Modo de desenvolvimento: simular usuário para teste
+          if (import.meta.env.DEV) {
+            console.log('Modo desenvolvimento: simulando usuário');
+            const mockUser: User = {
+              id: 1,
+              nome: "Usuário Teste",
+              email: "teste@teste.com",
+              tipo_pessoa: "F",
+              tipo_perfil: "user",
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            };
+            setUser(mockUser);
+          }
         }
       } catch (error) {
         console.error('Erro ao carregar usuário:', error);
         // Se der erro, limpa o token
+        console.log('Limpando token devido a erro');
         apiLogout();
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -87,6 +113,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     updateUser,
     refreshUser,
   };
+
+  console.log('AuthProvider value:', { 
+    user: user?.nome || 'null', 
+    isAuthenticated: !!user, 
+    isLoading 
+  });
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

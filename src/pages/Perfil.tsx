@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { MapPin, FileText, Plus, Edit, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { MapPin, FileText, Plus, Edit, Loader2, Crown } from "lucide-react";
 import { getCurrentUser, updateCurrentUser } from "@/api/user";
 import type { User } from "@/api/types";
+import { useToast } from "@/hooks/use-toast";
+
 // import { useAuth } from "@/context/AuthContext";
 
 
@@ -19,7 +20,59 @@ export default function Perfil() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [userData, setUserData] = useState<User | null>(null);
+  const { toast } = useToast();
+
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+    useEffect(() => {
+    checkWalletConnection();
+  }, []);
+
+  const checkWalletConnection = async () => {
+    if (typeof window.ethereum !== "undefined") {
+      try {
+        const accounts = await window.ethereum.request({ method: "eth_accounts" }) as string[];
+        if (accounts.length > 0) {
+          setWalletAddress(accounts[0]);
+        }
+      } catch (error) {
+        console.error("Error checking wallet connection:", error);
+      }
+    }
+  };
+
+    const connectMetaMask = async () => {
+    if (typeof window.ethereum !== "undefined") {
+      try {
+        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" }) as string[];
+        setWalletAddress(accounts[0]);
+        toast({
+          title: "Carteira conectada",
+          description: `Conectado: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`,
+        });
+      } catch (error) {
+        toast({
+          title: "Erro ao conectar",
+          description: "Não foi possível conectar à MetaMask",
+          variant: "destructive",
+        });
+      }
+    } else {
+      toast({
+        title: "MetaMask não encontrada",
+        description: "Por favor, instale a extensão MetaMask",
+        variant: "destructive",
+      });
+    }
+  };
+  const disconnectMetaMask = () => {
+    setWalletAddress(null);
+    toast({
+      title: "Carteira desconectada",
+      description: "MetaMask foi desconectada",
+    });
+  }
   
   const [editData, setEditData] = useState({
     nome: "",
@@ -63,7 +116,11 @@ export default function Perfil() {
         });
       } catch (error) {
         console.error("Erro ao carregar dados do usuário:", error);
-        toast.error("Erro ao carregar dados do usuário");
+        toast({
+          title: "Erro",
+          description: "Erro ao carregar dados do usuário",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
@@ -84,10 +141,66 @@ export default function Perfil() {
       setUserData(updatedUser);
       // await refreshUser();
       setIsEditModalOpen(false);
-      toast.success("Perfil atualizado com sucesso!");
+      toast({
+        title: "Sucesso!",
+        description: "Perfil atualizado com sucesso!",
+      });
     } catch (error) {
       console.error("Erro ao atualizar perfil:", error);
-      toast.error("Erro ao atualizar perfil");
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar perfil",
+        variant: "destructive",
+      });
+    }
+  };
+  const changeProfileType = async (type: string) => {
+    try {
+      if (!userData) return;
+      
+      setIsUpdatingProfile(true);
+      
+      // Mostrar loading (opcional)
+      toast({
+        title: "Atualizando...",
+        description: "Atualizando tipo de perfil...",
+      });
+      
+      const updatedUser = await updateCurrentUser({
+        tipo_perfil: type,
+      });
+      
+      // Atualizar o estado local
+      setUserData(updatedUser);
+      
+      // Se mudou para Blockchain e MetaMask não está conectado, solicitar conexão
+      if (type === "Blockchain" && !walletAddress) {
+        toast({
+          title: "Perfil atualizado!",
+          description: "Agora conecte sua MetaMask para usar os recursos Pro.",
+        });
+        
+        // Tentar conectar automaticamente após um pequeno delay
+        setTimeout(() => {
+          connectMetaMask();
+        }, 1500);
+      } else {
+        // Mostrar sucesso
+        toast({
+          title: "Sucesso!",
+          description: "Tipo de perfil atualizado com sucesso!",
+        });
+      }
+      
+    } catch (error) {
+      console.error("Erro ao atualizar tipo de perfil:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar tipo de perfil",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingProfile(false);
     }
   };
 
@@ -95,7 +208,11 @@ export default function Perfil() {
     e.preventDefault();
     
     if (!novoCampo.latitude || !novoCampo.longitude) {
-      toast.error("Preencha latitude e longitude");
+      toast({
+        title: "Erro",
+        description: "Preencha latitude e longitude",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -108,7 +225,10 @@ export default function Perfil() {
     setCampos([...campos, campo]);
     setNovoCampo({ latitude: "", longitude: "", observacoes: "" });
     setIsModalOpen(false);
-    toast.success("Campo adicionado com sucesso!");
+    toast({
+      title: "Sucesso!",
+      description: "Campo adicionado com sucesso!",
+    });
   };
 
   if (isLoading) {
@@ -139,9 +259,12 @@ export default function Perfil() {
                 <CardTitle className="text-2xl">Meu Perfil</CardTitle>
                 <CardDescription>Informações da sua conta</CardDescription>
               </div>
+     
               <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
                 <DialogTrigger asChild>
+                  
                   <Button variant="outline">
+                    
                     <Edit className="mr-2 h-4 w-4" />
                     Editar Perfil
                   </Button>
@@ -204,6 +327,76 @@ export default function Perfil() {
                   <Label className="text-muted-foreground">Telefone</Label>
                   <p className="text-lg font-medium">{userData.telefone || "Não informado"}</p>
                 </div>
+                <div>
+                  <Label className="text-muted-foreground">Tipo de Perfil</Label>
+                  <p className="text-lg font-medium">{userData.tipo_perfil === "Blockchain" ? "Usuário Pro!" : "Usuário Comum"}</p>
+                  {
+                    userData.tipo_perfil !== "Blockchain" && (
+                      <Button 
+                        className="mt-2 bg-primary hover:bg-primary/90"
+                        onClick={() => changeProfileType('Blockchain')}
+                        disabled={isUpdatingProfile}
+                      >
+                        {isUpdatingProfile ? "Atualizando..." : "Mudar para Usuário Pro!"}
+                      </Button>
+                    )
+                  }
+                  {
+                    userData.tipo_perfil === "Blockchain" && (
+                      <Button 
+                        className="mt-2 bg-primary hover:bg-primary/90"
+                        onClick={() => changeProfileType('user')}
+                        disabled={isUpdatingProfile}
+                      >
+                        {isUpdatingProfile ? "Atualizando..." : "Mudar para Usuário Comum"}
+                      </Button>
+                    )
+                  }
+                </div>
+                {userData.tipo_perfil === "Blockchain" && (
+                  <div>
+                    <Label className="text-muted-foreground">Status da MetaMask</Label>
+                    <div className="flex items-center gap-3 mt-2">
+                      {walletAddress ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span className="text-sm text-green-600">
+                              Conectado: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+                            </span>
+                          </div>
+
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                            <span className="text-sm text-red-600">Desconectado</span>
+                          </div>
+                          <Button 
+                            onClick={connectMetaMask}
+                            size="sm"
+                            className="bg-orange-500 hover:bg-orange-600 text-white"
+                          >
+                            Conectar MetaMask
+                          </Button>
+                        </div>
+                      )}
+                        
+                    </div>
+                    <div>
+                          {walletAddress && (
+                          <Button
+                            onClick={disconnectMetaMask}
+                            size="sm"
+                            className="bg-red-500 hover:bg-red-600 text-white mt-2"
+                          >
+                            Desconectar
+                          </Button>
+                          )}
+                        </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

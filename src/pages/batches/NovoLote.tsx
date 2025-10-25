@@ -12,12 +12,26 @@ import { ArrowLeft } from "lucide-react";
 import { createBatch } from "@/api/batches";
 import { listProductsByUser } from "@/api/products";
 import type { BatchCreate, Product } from "@/api/types";
+import { getCurrentUser } from "@/api/user";
 
 const NovoLote = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [produtos, setProdutos] = useState<Product[]>([]);
   const [isCustomCode, setIsCustomCode] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const user = await getCurrentUser();
+        setCurrentUser(user);
+      } catch (error: any) {
+        toast.error("Erro ao obter dados do usuário");
+      }
+    };
+
+    fetchCurrentUser();
+  }, []);
   const [formData, setFormData] = useState({
     code: "",
     product_id: "",
@@ -62,6 +76,7 @@ const NovoLote = () => {
     fetchProducts();
   }, []);
 
+  console.log(produtos);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -75,9 +90,20 @@ const NovoLote = () => {
         unidadeMedida: formData.unidadeMedida,
         status: formData.status,
       };
+      if (currentUser && currentUser.tipo_perfil === 'Blockchain') {
+        console.log('Simulando integração com blockchain...');
+        const produto = produtos.find(p => p.id.toString() === formData.product_id);
+        console.log(
+          'Informações do Produto:', produto.name, produto.variedade_cultivar,
+          'Informações do Lote:', batchData
+        )
+        alert('Lote registrado na blockchain com sucesso!');
+      }
 
       await createBatch(batchData);
       toast.success("Lote cadastrado com sucesso!");
+  
+
       navigate("/lotes");
     } catch (error: any) {
       toast.error(error.message || "Erro ao cadastrar lote");

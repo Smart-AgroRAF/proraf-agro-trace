@@ -18,7 +18,7 @@ export interface RegisterRequest {
   cpf?: string;
   cnpj?: string;
   telefone?: string;
-  tipo_perfil?: 'user' | 'admin';
+  tipo_perfil?: string;
 }
 
 export interface TokenResponse {
@@ -34,7 +34,7 @@ export interface User {
   cpf?: string;
   cnpj?: string;
   telefone?: string;
-  tipo_perfil: 'user' | 'admin';
+  tipo_perfil: string;
   created_at: string;
   updated_at: string;
 }
@@ -161,6 +161,7 @@ export interface UserUpdate {
   nome?: string;
   telefone?: string;
   senha?: string;
+  tipo_perfil?: string;
 }
 
 export interface UsersStats {

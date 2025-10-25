@@ -14,14 +14,27 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { updateCurrentUserCpfCnpj } from "@/api/user";
+import { updateCurrentUserCpfCnpj, getCurrentUser } from "@/api/user";
 import { useAuth } from "@/context/AuthContext";
 import type { User } from "@/api/types";
 
 export const NavbarLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const user = await getCurrentUser();
+        setCurrentUser(user);
+      } catch (error: any) {
+        console.log("Erro ao obter dados do usuário");
+      }
+    };
+
+    fetchCurrentUser();
+  }, []);
+
   // Tentar usar o contexto com fallback de erro
   let user: User | null = null;
   let isAuthenticated = false;
@@ -42,7 +55,6 @@ export const NavbarLogin = () => {
   }
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [showCpfCnpjModal, setShowCpfCnpjModal] = useState(false);
   
   // Função para verificar se precisa mostrar modal
@@ -52,55 +64,18 @@ export const NavbarLogin = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    checkWalletConnection();
     
     // Verificar se o usuário está autenticado mas não tem CPF/CNPJ
     if (shouldShowModal) {
       console.log("Usuário autenticado sem CPF/CNPJ - Abrindo modal");
       setShowCpfCnpjModal(true);
-    } else if (isAuthenticated && user && (user.cpf || user.cnpj)) {
+    } else if (user && (user.cpf || user.cnpj)) {
       console.log("Usuário já possui CPF/CNPJ cadastrado");
       setShowCpfCnpjModal(false);
     }
   }, [isAuthenticated, user, shouldShowModal]);
 
-  const checkWalletConnection = async () => {
-    if (typeof window.ethereum !== "undefined") {
-      try {
-        const accounts = await window.ethereum.request({ method: "eth_accounts" }) as string[];
-        if (accounts.length > 0) {
-          setWalletAddress(accounts[0]);
-        }
-      } catch (error) {
-        console.error("Error checking wallet connection:", error);
-      }
-    }
-  };
 
-  const connectMetaMask = async () => {
-    if (typeof window.ethereum !== "undefined") {
-      try {
-        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" }) as string[];
-        setWalletAddress(accounts[0]);
-        toast({
-          title: "Carteira conectada",
-          description: `Conectado: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`,
-        });
-      } catch (error) {
-        toast({
-          title: "Erro ao conectar",
-          description: "Não foi possível conectar à MetaMask",
-          variant: "destructive",
-        });
-      }
-    } else {
-      toast({
-        title: "MetaMask não encontrada",
-        description: "Por favor, instale a extensão MetaMask",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleLogout = () => {
     logout();
@@ -326,10 +301,7 @@ export const NavbarLogin = () => {
                   <Link to="/perfil" className="text-foreground hover:text-primary transition-colors">
                     Perfil
                   </Link>
-                  <Button onClick={connectMetaMask} variant="outline" size="sm">
-                    <Wallet className="h-4 w-4 mr-2" />
-                    {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : "MetaMask"}
-                  </Button>
+
                   <Button onClick={handleLogout} variant="outline" size="sm">
                     <LogOut className="h-4 w-4 mr-2" />
                     Sair
@@ -388,10 +360,6 @@ export const NavbarLogin = () => {
                 >
                   Perfil
                 </Link>
-                <Button onClick={connectMetaMask} variant="outline" size="sm" className="w-full mt-2">
-                  <Wallet className="h-4 w-4 mr-2" />
-                  {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : "MetaMask"}
-                </Button>
                 <Button onClick={handleLogout} variant="outline" size="sm" className="w-full mt-2">
                   <LogOut className="h-4 w-4 mr-2" />
                   Sair

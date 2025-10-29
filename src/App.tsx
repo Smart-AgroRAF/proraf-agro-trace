@@ -5,19 +5,25 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { AppRoutes } from "@/router";
 import { AuthProvider } from "@/context/AuthContext";
+import { EthereumProvider } from "@/smartContract/contexts/EthereumContext";
+import { TransactionProvider } from "@/smartContract/contexts/TransactionContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </TooltipProvider>
+      <EthereumProvider>
+        <TransactionProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </TooltipProvider>
+        </TransactionProvider>
+      </EthereumProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

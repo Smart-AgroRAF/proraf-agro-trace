@@ -84,7 +84,24 @@ const NovoLote = () => {
     setLoading(true);
 
     try {
-      // Primeiro, validamos os dados
+      // Validações básicas antes de processar
+      if (!formData.code || !formData.product_id || !formData.dt_expedition || !formData.producao) {
+        toast.error("Preencha todos os campos obrigatórios");
+        return;
+      }
+
+      if (parseFloat(formData.producao) <= 0) {
+        toast.error("Quantidade deve ser maior que zero");
+        return;
+      }
+
+      // Validar formato da data
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(formData.dt_expedition)) {
+        toast.error("Data deve estar no formato válido");
+        return;
+      }
+
       const batchData: BatchCreate = {
         code: formData.code,
         product_id: parseInt(formData.product_id),

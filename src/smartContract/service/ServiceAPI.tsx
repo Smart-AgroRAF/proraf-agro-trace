@@ -13,6 +13,8 @@ import type {
 
 // Import environment variables from .env file
 const erc = import.meta.env.VITE_ERC
+const blockchainApiUrl = import.meta.env.VITE_BLOCKCHAIN_API_URL || 'http://localhost:3000'
+
 if (!erc) {
     throw new Error("ERC not defined in .env");
 }
@@ -20,19 +22,54 @@ if (!erc) {
 export default class ServiceAPI {
 
     static api = axios.create({
-        baseURL: `http://localhost:3000/api/${erc}/`,
-        headers: { "Content-Type": "application/json" },
+        baseURL: `${blockchainApiUrl}/api/${erc}/`,
+        headers: { 
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
     })
 
     private static handleError(error: unknown): never {
         const err = error as AxiosError
-        console.error("Error sending to the API:", err.response?.data || err.message)
+        console.error("Error details:", {
+            message: err.message,
+            status: err.response?.status,
+            statusText: err.response?.statusText,
+            data: err.response?.data,
+            config: {
+                url: err.config?.url,
+                method: err.config?.method,
+                baseURL: err.config?.baseURL
+            }
+        });
         throw err
     }
 
     static async mintRootBatchTx(payload: MintRootBatchPayload): Promise<any> {
         try {
+            console.log('Dados enviados para a API blockchain:', payload);
+            
+            // Validações básicas antes do envio
+            if (!payload.productName || !payload.batchId) {
+                throw new Error("Nome do produto e código do lote são obrigatórios");
+            }
+
+            if (!payload.batchQuantity || payload.batchQuantity <= 0) {
+                throw new Error("Quantidade deve ser maior que zero");
+            }
+
+            // Validar formato da data
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (!dateRegex.test(payload.productExpeditionDate)) {
+                throw new Error("Data deve estar no formato YYYY-MM-DD");
+            }
+
+            if (!payload.from || !payload.to) {
+                throw new Error("Endereços from e to são obrigatórios");
+            }
+
             const response = await this.api.post("/mintRootBatchTx", payload)
+            console.log('Resposta da API blockchain:', response.data);
             return response.data
         } catch (error) {
             this.handleError(error)

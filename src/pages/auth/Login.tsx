@@ -22,12 +22,15 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // Flag para desabilitar Google Auth em caso de problemas
+  const isGoogleAuthEnabled = import.meta.env.VITE_GOOGLE_AUTH_ENABLED !== 'false';
 
   useEffect(() => {
-    // Inicializa o Google Identity Services
-    if (window.google) {
+    // Inicializa o Google Identity Services apenas se estiver habilitado
+    if (isGoogleAuthEnabled && window.google) {
       window.google.accounts.id.initialize({
-        client_id: "149795163999-vd3lf5uf5u0od7i2msjj0pkp3nlfm217.apps.googleusercontent.com",
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "149795163999-vd3lf5uf5u0od7i2msjj0pkp3nlfm217.apps.googleusercontent.com",
         callback: handleGoogleLogin,
       });
 
@@ -127,7 +130,13 @@ const Login = () => {
                 </span>
               </div>
 
-              <div id="google-signin-button" className="w-full"></div>
+              {isGoogleAuthEnabled ? (
+                <div id="google-signin-button" className="w-full"></div>
+              ) : (
+                <div className="w-full p-3 border rounded-md text-center text-muted-foreground">
+                  Google Sign-In temporariamente desabilitado
+                </div>
+              )}
 
               <div className="text-center text-sm text-muted-foreground mt-4">
                 Não tem uma conta?{" "}

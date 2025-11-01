@@ -3,10 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Boxes, Calendar, MapPin, Package, Activity, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Boxes, Calendar, MapPin, Package, Activity, Pencil, Trash2, Printer } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useApi, useMutation } from "@/hooks/useApi";
 import { getBatchById, deleteBatch, updateBatch } from "@/api/batches";
+import { printBatchLabel, type PrintLabelRequest } from "@/api/print";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -28,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 
 const LoteDetalhes = () => {
@@ -35,11 +37,19 @@ const LoteDetalhes = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isPrintOpen, setIsPrintOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     dt_colheita: "",
     dt_expedition: "",
     producao: 0,
     talhao: "",
+  });
+  const [printForm, setPrintForm] = useState({
+    printer_name: "ZDesigner ZT230-200dpi ZPL",
+    peso: "",
+    endereco: "",
+    telefone: "",
+    validade_dias: 30,
   });
 
   // Buscar dados do lote
@@ -55,6 +65,9 @@ const LoteDetalhes = () => {
   const { mutate: updateBatchMutation, loading: updateLoading } = useMutation(
     (data: { batchId: number; updateData: any }) => updateBatch(data.batchId, data.updateData)
   );
+
+  // Mutation para impressão
+  const { mutate: printLabelMutation, loading: printLoading } = useMutation(printBatchLabel);
 
   const handleDelete = async () => {
     try {
@@ -96,6 +109,36 @@ const LoteDetalhes = () => {
       toast({
         title: "Erro ao atualizar",
         description: "Não foi possível atualizar o lote.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePrint = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!lote) return;
+
+    try {
+      const request: PrintLabelRequest = {
+        batch_code: lote.code,
+        printer_name: printForm.printer_name || undefined,
+        peso: printForm.peso || undefined,
+        endereco: printForm.endereco || undefined,
+        telefone: printForm.telefone || undefined,
+        validade_dias: printForm.validade_dias || undefined,
+      };
+
+      const response = await printLabelMutation(request);
+      
+      toast({
+        title: "Etiqueta impressa!",
+        description: response.message,
+      });
+      setIsPrintOpen(false);
+    } catch (error: any) {
+      toast({
+        title: "Erro ao imprimir",
+        description: error.message || "Não foi possível imprimir a etiqueta.",
         variant: "destructive",
       });
     }
@@ -164,9 +207,79 @@ const LoteDetalhes = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     {getStatusBadge()}
+                    <Dialog open={isPrintOpen} onOpenChange={setIsPrintOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="icon" title="Imprimir Etiqueta">
+                          <Printer className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[500px]">
+                        <DialogHeader>
+                          <DialogTitle>Imprimir Etiqueta do Lote</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handlePrint} className="space-y-4">
+                          <div>
+                            <Label htmlFor="printer_name">Nome da Impressora</Label>
+                            <Input
+                              id="printer_name"
+                              value={printForm.printer_name}
+                              onChange={(e) => setPrintForm({ ...printForm, printer_name: e.target.value })}
+                              placeholder="ZDesigner ZT230-200dpi ZPL"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="peso">Peso (opcional)</Label>
+                            <Input
+                              id="peso"
+                              value={printForm.peso}
+                              onChange={(e) => setPrintForm({ ...printForm, peso: e.target.value })}
+                              placeholder="Ex: 1.5kg"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="endereco">Endereço (opcional)</Label>
+                            <Textarea
+                              id="endereco"
+                              value={printForm.endereco}
+                              onChange={(e) => setPrintForm({ ...printForm, endereco: e.target.value })}
+                              placeholder="Endereço para impressão na etiqueta"
+                              rows={2}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="telefone">Telefone (opcional)</Label>
+                            <Input
+                              id="telefone"
+                              value={printForm.telefone}
+                              onChange={(e) => setPrintForm({ ...printForm, telefone: e.target.value })}
+                              placeholder="(00) 00000-0000"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="validade_dias">Validade (dias)</Label>
+                            <Input
+                              id="validade_dias"
+                              type="number"
+                              value={printForm.validade_dias}
+                              onChange={(e) => setPrintForm({ ...printForm, validade_dias: Number(e.target.value) })}
+                              placeholder="30"
+                              min="1"
+                            />
+                          </div>
+                          <div className="flex justify-end gap-3 pt-4">
+                            <Button type="button" variant="outline" onClick={() => setIsPrintOpen(false)}>
+                              Cancelar
+                            </Button>
+                            <Button type="submit" disabled={printLoading}>
+                              {printLoading ? "Imprimindo..." : "Imprimir Etiqueta"}
+                            </Button>
+                          </div>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
                     <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="icon">
+                        <Button variant="outline" size="icon" title="Editar Lote">
                           <Pencil className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>

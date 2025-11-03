@@ -53,10 +53,6 @@ const LoteDetalhes = () => {
   });
   const [printForm, setPrintForm] = useState({
     printer_name: "ZDesigner ZT230-200dpi ZPL",
-    peso: "",
-    endereco: "",
-    telefone: "",
-    validade_dias: 30,
   });
 
   // Buscar dados do lote
@@ -130,18 +126,20 @@ const LoteDetalhes = () => {
     }
   };
 
-  const handlePrint = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!lote) return;
+  const handlePrint = async () => {
+    if (!lote || !trackingData || !user) return;
 
     try {
+      // Usar os mesmos dados automatizados do PDF
+      const produtoData = getProdutoData();
+      
       const request: PrintLabelRequest = {
         batch_code: lote.code,
-        printer_name: printForm.printer_name || undefined,
-        peso: printForm.peso || undefined,
-        endereco: printForm.endereco || undefined,
-        telefone: printForm.telefone || undefined,
-        validade_dias: printForm.validade_dias || undefined,
+        printer_name: printForm.printer_name || "ZDesigner ZT230-200dpi ZPL",
+        peso: produtoData.pesoLiquido,
+        endereco: produtoData.endereco,
+        telefone: produtoData.telefone,
+        validade_dias: 30,
       };
 
       const response = await printLabelMutation(request);
@@ -380,7 +378,7 @@ const LoteDetalhes = () => {
                         <DialogHeader>
                           <DialogTitle>Imprimir Etiqueta do Lote</DialogTitle>
                         </DialogHeader>
-                        <form onSubmit={handlePrint} className="space-y-4">
+                        <div className="space-y-4">
                           <div>
                             <Label htmlFor="printer_name">Nome da Impressora</Label>
                             <Input
@@ -390,54 +388,48 @@ const LoteDetalhes = () => {
                               placeholder="ZDesigner ZT230-200dpi ZPL"
                             />
                           </div>
-                          <div>
-                            <Label htmlFor="peso">Peso (opcional)</Label>
-                            <Input
-                              id="peso"
-                              value={printForm.peso}
-                              onChange={(e) => setPrintForm({ ...printForm, peso: e.target.value })}
-                              placeholder="Ex: 1.5kg"
-                            />
+                          
+                          {/* Preview das informações que serão impressas automaticamente */}
+                          <div className="bg-muted/20 p-4 rounded-lg">
+                            <h4 className="font-semibold mb-3">Informações da etiqueta (automáticas):</h4>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Produto:</span>
+                                <span className="font-medium">{trackingData ? (trackingData.product.comertial_name || trackingData.product.name) : "Carregando..."}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Peso:</span>
+                                <span className="font-medium">{lote?.producao ? `${Number(lote.producao).toFixed(2)} ${lote.unidadeMedida || 'kg'}` : "N/A"}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Produtor:</span>
+                                <span className="font-medium">{user?.nome || "Carregando..."}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Endereço:</span>
+                                <span className="font-medium">Alegrete - RS, Brasil</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Telefone:</span>
+                                <span className="font-medium">{user?.telefone || "(55) 0000-0000"}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Validade:</span>
+                                <span className="font-medium">30 dias</span>
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <Label htmlFor="endereco">Endereço (opcional)</Label>
-                            <Textarea
-                              id="endereco"
-                              value={printForm.endereco}
-                              onChange={(e) => setPrintForm({ ...printForm, endereco: e.target.value })}
-                              placeholder="Endereço para impressão na etiqueta"
-                              rows={2}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="telefone">Telefone (opcional)</Label>
-                            <Input
-                              id="telefone"
-                              value={printForm.telefone}
-                              onChange={(e) => setPrintForm({ ...printForm, telefone: e.target.value })}
-                              placeholder="(00) 00000-0000"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="validade_dias">Validade (dias)</Label>
-                            <Input
-                              id="validade_dias"
-                              type="number"
-                              value={printForm.validade_dias}
-                              onChange={(e) => setPrintForm({ ...printForm, validade_dias: Number(e.target.value) })}
-                              placeholder="30"
-                              min="1"
-                            />
-                          </div>
+
                           <div className="flex justify-end gap-3 pt-4">
                             <Button type="button" variant="outline" onClick={() => setIsPrintOpen(false)}>
                               Cancelar
                             </Button>
-                            <Button type="submit" disabled={printLoading}>
+                            <Button onClick={handlePrint} disabled={printLoading}>
+                              <Printer className="mr-2 h-4 w-4" />
                               {printLoading ? "Imprimindo..." : "Imprimir Etiqueta"}
                             </Button>
                           </div>
-                        </form>
+                        </div>
                       </DialogContent>
                     </Dialog>
                     <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>

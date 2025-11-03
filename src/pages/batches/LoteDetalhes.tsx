@@ -3,12 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Boxes, Calendar, MapPin, Package, Activity, Pencil, Trash2, Printer } from "lucide-react";
+import { ArrowLeft, Boxes, Calendar, MapPin, Package, Activity, Pencil, Trash2, Printer, FileDown } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useApi, useMutation } from "@/hooks/useApi";
 import { getBatchById, deleteBatch, updateBatch } from "@/api/batches";
 import { printBatchLabel, type PrintLabelRequest } from "@/api/print";
+import { trackBatchByCode, type TrackingInfo } from "@/api/traking";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,14 +32,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { EtiquetaProduto } from "@/components/EtiquetaProduto";
+import { usePDFGenerator } from "@/hooks/usePDFGenerator";
+import type { Produto } from "@/types/produto";
 import { useState } from "react";
 
 const LoteDetalhes = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isPrintOpen, setIsPrintOpen] = useState(false);
+  const [isPdfOpen, setIsPdfOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     dt_colheita: "",
     dt_expedition: "",
@@ -58,6 +65,12 @@ const LoteDetalhes = () => {
     [id]
   );
 
+  // Buscar dados completos de rastreamento
+  const { data: trackingData, loading: trackingLoading } = useApi(
+    () => lote ? trackBatchByCode(lote.code) : Promise.reject("Lote não encontrado"),
+    [lote?.code]
+  );
+
   // Mutation para deletar
   const { mutate: deleteBatchMutation, loading: deleteLoading } = useMutation(deleteBatch);
 
@@ -68,6 +81,9 @@ const LoteDetalhes = () => {
 
   // Mutation para impressão
   const { mutate: printLabelMutation, loading: printLoading } = useMutation(printBatchLabel);
+
+  // Hook para geração de PDF
+  const { gerarPDF } = usePDFGenerator();
 
   const handleDelete = async () => {
     try {
@@ -144,10 +160,101 @@ const LoteDetalhes = () => {
     }
   };
 
-  if (loading) {
+  const handleGeneratePDF = async () => {
+    try {
+      const sucesso = await gerarPDF('etiqueta-pdf', `etiqueta-lote-${lote?.code}.pdf`);
+      
+      if (sucesso) {
+        toast({
+          title: "PDF gerado!",
+          description: "A etiqueta foi salva como PDF com sucesso.",
+        });
+        setIsPdfOpen(false);
+      } else {
+        toast({
+          title: "Erro ao gerar PDF",
+          description: "Não foi possível gerar o PDF da etiqueta.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erro ao gerar PDF",
+        description: "Ocorreu um erro inesperado.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Função para truncar nome a máximo 10 caracteres
+  const truncateName = (name: string, maxLength: number = 10): string => {
+    if (name.length <= maxLength) return name;
+    return name.substring(0, maxLength).trim();
+  };
+
+  // Mapear dados do lote para o formato da etiqueta (automático com dados reais)
+  const getProdutoData = (): Produto => {
+    if (!lote || !trackingData || !user) {
+      return {
+        nome: "",
+        pesoLiquido: "",
+        empresa: "",
+        endereco: "",
+        cpf: "",
+        telefone: "",
+        validadeAte: "",
+        codigoProduto: "",
+        codigoLote: "",
+        urlRastreio: "",
+      };
+    }
+
+    const validadeDate = new Date();
+    validadeDate.setDate(validadeDate.getDate() + 30); // 30 dias de validade padrão
+
+    // Usar nome comercial se disponível, senão nome do produto, limitado a 10 caracteres
+    const productName = trackingData.product.comertial_name || trackingData.product.name;
+    const truncatedName = truncateName(productName);
+
+    // Formatação do CPF/CNPJ baseado no tipo de pessoa
+    const formatCpfCnpj = (documento?: string, tipoPessoa?: 'F' | 'J'): string => {
+      if (!documento) return "Não informado";
+      
+      if (tipoPessoa === 'F') {
+        // CPF: 000.000.000-00
+        const cpf = documento.replace(/\D/g, '');
+        if (cpf.length === 11) {
+          return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+      } else if (tipoPessoa === 'J') {
+        // CNPJ: 00.000.000/0000-00
+        const cnpj = documento.replace(/\D/g, '');
+        if (cnpj.length === 14) {
+          return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+        }
+      }
+      
+      return documento;
+    };
+
+    return {
+      nome: truncatedName, // Nome da fruta/produto com máximo 10 caracteres
+      pesoLiquido: lote.producao ? `${Number(lote.producao).toFixed(2)} ${lote.unidadeMedida}` : "N/A",
+      empresa: user.nome, // Nome do usuário produtor logado
+      endereco: "Alegrete - RS, Brasil", // Endereço padrão do sistema
+      cpf: formatCpfCnpj(user.cpf || user.cnpj, user.tipo_pessoa), // CPF/CNPJ real formatado
+      telefone: user.telefone || "(55) 0000-0000", // Telefone real ou padrão
+      validadeAte: validadeDate.toLocaleDateString("pt-BR"),
+      codigoProduto: trackingData.product.code,
+      codigoLote: lote.code,
+      urlRastreio: `${window.location.origin}/rastrear/${lote.code}`,
+    };
+  };
+
+  if (loading || trackingLoading || !user) {
     return (
       <div className="min-h-screen bg-background">
-        
+        {/* <Navbar /> */}
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center h-64">
             <p className="text-muted-foreground">Carregando...</p>
@@ -160,7 +267,7 @@ const LoteDetalhes = () => {
   if (error || !lote) {
     return (
       <div className="min-h-screen bg-background">
-        
+        {/* <Navbar /> */}
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col items-center justify-center h-64 gap-4">
             <p className="text-destructive">Erro ao carregar o lote</p>
@@ -179,7 +286,7 @@ const LoteDetalhes = () => {
 
   return (
     <div className="min-h-screen bg-background">
-     
+      {/* <Navbar /> */}
       <div className="container mx-auto px-4 py-8">
         <Link to="/lotes">
           <Button variant="ghost" className="mb-6">
@@ -200,13 +307,69 @@ const LoteDetalhes = () => {
                     </div>
                     <div>
                       <CardTitle className="text-2xl mb-2">{lote.code}</CardTitle>
-                      <Link to={`/produtos/${lote.product_id}`} className="text-primary hover:underline">
-                        Produto #{lote.product_id}
-                      </Link>
+                      {trackingData ? (
+                        <div>
+                          <Link to={`/produtos/${lote.product_id}`} className="text-primary hover:underline text-lg font-medium">
+                            {trackingData.product.name}
+                          </Link>
+                          {trackingData.product.comertial_name && (
+                            <p className="text-sm text-muted-foreground">
+                              {trackingData.product.comertial_name}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <Link to={`/produtos/${lote.product_id}`} className="text-primary hover:underline">
+                          Produto #{lote.product_id}
+                        </Link>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {getStatusBadge()}
+                    <Dialog open={isPdfOpen} onOpenChange={setIsPdfOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="icon" title="Gerar PDF da Etiqueta">
+                          <FileDown className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[700px]">
+                        <DialogHeader>
+                          <DialogTitle>Gerar PDF da Etiqueta</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          {/* Preview da etiqueta */}
+                          <div className="text-center">
+                            <p className="text-sm text-muted-foreground mb-4">
+                              Preview da etiqueta que será gerada automaticamente:
+                            </p>
+                            <div className="flex justify-center bg-gray-50 p-6 rounded-lg">
+                              <div style={{ transform: 'scale(0.7)', transformOrigin: 'center' }}>
+                                <EtiquetaProduto produto={getProdutoData()} />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Hidden full-size version for PDF generation */}
+                          <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+                            <div id="etiqueta-pdf">
+                              <EtiquetaProduto produto={getProdutoData()} />
+                            </div>
+                          </div>
+
+                          {/* Botões de ação */}
+                          <div className="flex justify-end gap-3 pt-4">
+                            <Button type="button" variant="outline" onClick={() => setIsPdfOpen(false)}>
+                              Cancelar
+                            </Button>
+                            <Button onClick={handleGeneratePDF}>
+                              <FileDown className="mr-2 h-4 w-4" />
+                              Gerar PDF
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                     <Dialog open={isPrintOpen} onOpenChange={setIsPrintOpen}>
                       <DialogTrigger asChild>
                         <Button variant="outline" size="icon" title="Imprimir Etiqueta">

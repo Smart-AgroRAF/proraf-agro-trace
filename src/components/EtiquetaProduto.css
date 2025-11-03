@@ -1,0 +1,13 @@
+#etiqueta {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  color-scheme: light !important;
+}
+
+#etiqueta * {
+  color: #000000 !important;
+}
+
+#etiqueta div {
+  color: #000000 !important;
+}

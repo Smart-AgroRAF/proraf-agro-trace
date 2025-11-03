@@ -8,7 +8,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { useApi, useMutation } from "@/hooks/useApi";
 import { getBatchById, deleteBatch, updateBatch } from "@/api/batches";
 import { printBatchLabel, type PrintLabelRequest } from "@/api/print";
-import { trackBatchByCode, type TrackingInfo } from "@/api/traking";
+import { formatDateTime, trackBatchByCode, type TrackingInfo } from "@/api/traking";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -552,9 +552,27 @@ const LoteDetalhes = () => {
                 <CardTitle>Histórico de Movimentações</CardTitle>
               </CardHeader>
               <CardContent>
+                {trackingData && trackingData.movements.length > 0 ? (
+                  <div className="space-y-4">
+                    {trackingData.movements.map((movement, index: number) => (
+                      <Link to={`/movimentacoes/${movement.id}`} key={movement.id} className="no-underline hover:underline">
+                      <div key={movement.id} className="flex justify-between items-center p-3 bg-muted/10 rounded-lg">
+                        <div>
+                          <p className="font-medium">{movement.tipo_movimentacao}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {formatDateTime(movement.created_at)}
+                          </p>
+                        </div>
+                        <p className="font-semibold">{movement.quantidade} kg</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
                 <p className="text-muted-foreground text-center py-8">
-                  As movimentações serão exibidas quando vinculadas ao lote
+                  Nenhuma movimentação registrada para este lote
                 </p>
+                )}
               </CardContent>
             </Card>
           </div>

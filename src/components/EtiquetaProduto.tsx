@@ -53,12 +53,12 @@ export const EtiquetaProduto: React.FC<EtiquetaProdutoProps> = ({ produto }) => 
 
       {/* Peso líquido */}
       <div style={{ 
-        fontSize: '38px',
+        fontSize: '28px',
         marginBottom: '15px',
         textAlign: 'center',
         color: '#000'
       }}>
-        {produto.pesoLiquido}
+        Peso Liquido ({produto.pesoLiquido})
       </div>
 
       {/* Informações da empresa */}
@@ -130,6 +130,39 @@ export const EtiquetaProduto: React.FC<EtiquetaProdutoProps> = ({ produto }) => 
         color: '#000'
       }}>
         Código Lote: {produto.codigoLote}
+      </div>
+
+      {/* Logos acima do QR Code */}
+      <div style={{
+        position: 'absolute',
+        bottom: '160px',
+        right: '20px',
+        width: '120px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '5px'
+      }}>
+        <img 
+          src="/ProdutoOrganico.png" 
+          alt="Produto Orgânico" 
+          style={{ 
+            width: '50px', 
+            height: 'auto',
+            maxHeight: '25px',
+            objectFit: 'contain'
+          }}
+        />
+        <img 
+          src="/proraf.png" 
+          alt="ProRAF" 
+          style={{ 
+            width: '70px', 
+            height: 'auto',
+            maxHeight: '30px',
+            objectFit: 'contain'
+          }}
+        />
       </div>
 
       {/* QR Code */}

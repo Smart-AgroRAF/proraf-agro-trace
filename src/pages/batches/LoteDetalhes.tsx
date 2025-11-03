@@ -295,18 +295,18 @@ const LoteDetalhes = () => {
           </Button>
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Informações principais */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <Boxes className="h-8 w-8 text-primary" />
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Boxes className="h-6 w-6 md:h-8 md:w-8 text-primary" />
                     </div>
-                    <div>
-                      <CardTitle className="text-2xl mb-2">{lote.code}</CardTitle>
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="text-xl md:text-2xl mb-2 break-words">{lote.code}</CardTitle>
                       {trackingData ? (
                         <div>
                           <Link to={`/produtos/${lote.product_id}`} className="text-primary hover:underline text-lg font-medium">
@@ -325,11 +325,11 @@ const LoteDetalhes = () => {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                     {getStatusBadge()}
                     <Dialog open={isPdfOpen} onOpenChange={setIsPdfOpen}>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="icon" title="Gerar PDF da Etiqueta">
+                        <Button variant="outline" size="icon" title="Gerar PDF da Etiqueta" className="h-9 w-9">
                           <FileDown className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
@@ -372,7 +372,7 @@ const LoteDetalhes = () => {
                     </Dialog>
                     <Dialog open={isPrintOpen} onOpenChange={setIsPrintOpen}>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="icon" title="Imprimir Etiqueta">
+                        <Button variant="outline" size="icon" title="Imprimir Etiqueta" className="h-9 w-9">
                           <Printer className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
@@ -442,7 +442,7 @@ const LoteDetalhes = () => {
                     </Dialog>
                     <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="icon" title="Editar Lote">
+                        <Button variant="outline" size="icon" title="Editar Lote" className="h-9 w-9">
                           <Pencil className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
@@ -488,7 +488,7 @@ const LoteDetalhes = () => {
                     </Dialog>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="icon">
+                        <Button variant="destructive" size="icon" className="h-9 w-9">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>
@@ -511,34 +511,35 @@ const LoteDetalhes = () => {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex items-center gap-3">
-                    <MapPin className="h-5 w-5 text-muted-foreground" />
-                    <div>
+                    <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <div className="min-w-0">
                       <p className="text-sm text-muted-foreground">Talhão</p>
-                      <p className="font-medium">{lote.talhao || "Não informado"}</p>
+                      <p className="font-medium break-words">{lote.talhao || "Não informado"}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Package className="h-5 w-5 text-muted-foreground" />
-                    <div>
+                    <Package className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <div className="min-w-0">
                       <p className="text-sm text-muted-foreground">Produção</p>
-                      <p className="font-medium">{lote.producao ? `${Number(lote.producao).toFixed(2)} kg` : "Não informado"}</p>
+                      <p className="font-medium break-words">{lote.producao ? `${Number(lote.producao).toFixed(2)} kg` : "Não informado"}</p>
                     </div>
                   </div>
                 </div>
                 <div className="flex justify-center pt-4 border-t">
                   <div className="flex flex-col items-center gap-2">
-                    <p className="text-sm text-muted-foreground">QR Code para Rastreamento</p>
-                    <div className="p-4 bg-white rounded-lg">
+                    <p className="text-sm text-muted-foreground text-center">QR Code para Rastreamento</p>
+                    <div className="p-3 md:p-4 bg-white rounded-lg">
                       <QRCodeSVG 
                         value={`${window.location.origin}/rastrear/${lote.code}`}
-                        size={160}
+                        size={120}
+                        className="md:w-[160px] md:h-[160px]"
                         level="H"
                         includeMargin={true}
                       />
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">
+                    <p className="text-xs text-muted-foreground mt-2 text-center">
                       Escaneie para rastrear
                     </p>
                   </div>
@@ -553,12 +554,12 @@ const LoteDetalhes = () => {
               </CardHeader>
               <CardContent>
                 {trackingData && trackingData.movements.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     {trackingData.movements.map((movement, index: number) => (
                       <Link to={`/movimentacoes/${movement.id}`} key={movement.id} className="no-underline hover:underline">
-                      <div key={movement.id} className="flex justify-between items-center p-3 bg-muted/10 rounded-lg">
-                        <div>
-                          <p className="font-medium">{movement.tipo_movimentacao}</p>
+                      <div key={movement.id} className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 p-3 bg-muted/10 rounded-lg">
+                        <div className="min-w-0">
+                          <p className="font-medium break-words">{movement.tipo_movimentacao}</p>
                           <p className="text-sm text-muted-foreground">
                             {formatDateTime(movement.created_at)}
                           </p>
@@ -578,7 +579,7 @@ const LoteDetalhes = () => {
           </div>
 
           {/* Informações técnicas */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Datas Importantes</CardTitle>
@@ -587,10 +588,10 @@ const LoteDetalhes = () => {
                 
                 {lote.dt_colheita && (
                   <div className="flex items-center gap-3">
-                    <Calendar className="h-5 w-5 text-muted-foreground" />
-                    <div>
+                    <Calendar className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <div className="min-w-0">
                       <p className="text-sm text-muted-foreground">Data de Colheita</p>
-                      <p className="font-medium">
+                      <p className="font-medium break-words">
                         {new Date(lote.dt_colheita).toLocaleDateString("pt-BR")}
                       </p>
                     </div>
@@ -598,10 +599,10 @@ const LoteDetalhes = () => {
                 )}
                 {lote.dt_expedition && (
                   <div className="flex items-center gap-3">
-                    <Calendar className="h-5 w-5 text-muted-foreground" />
-                    <div>
+                    <Calendar className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <div className="min-w-0">
                       <p className="text-sm text-muted-foreground">Data de Expedição</p>
-                      <p className="font-medium">
+                      <p className="font-medium break-words">
                         {new Date(lote.dt_expedition).toLocaleDateString("pt-BR")}
                       </p>
                     </div>

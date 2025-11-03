@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-// @ts-expect-error - Testing library types may not be loaded yet
 import { renderHook, waitFor } from '@testing-library/react';
 import { useApi, useMutation, usePagination, useDebounce } from '@/hooks/useApi';
 

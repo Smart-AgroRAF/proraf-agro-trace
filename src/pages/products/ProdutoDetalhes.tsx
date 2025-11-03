@@ -202,7 +202,7 @@ const getImageUrl = (imagePath: string | null) => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <Link to="/produtos">
             <Button variant="ghost">
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -210,11 +210,11 @@ const getImageUrl = (imagePath: string | null) => {
             </Button>
           </Link>
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap sm:flex-nowrap">
             {/* Edit Button */}
             <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline">
+                <Button variant="outline" className="flex-1 sm:flex-none">
                   <Edit className="h-4 w-4 mr-2" />
                   Editar
                 </Button>
@@ -291,7 +291,7 @@ const getImageUrl = (imagePath: string | null) => {
             {/* Delete Button */}
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive">
+                <Button variant="destructive" className="flex-1 sm:flex-none">
                   <Trash2 className="h-4 w-4 mr-2" />
                   Excluir
                 </Button>
@@ -320,14 +320,14 @@ const getImageUrl = (imagePath: string | null) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Informações principais */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-primary/10 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
                       {produto.image && !imageError ? (
                         <img 
                           src={getImageUrl(produto.image)}
@@ -340,9 +340,9 @@ const getImageUrl = (imagePath: string | null) => {
                         <Package className="h-8 w-8 text-primary" />
                       )}
                     </div>
-                    <div>
-                      <CardTitle className="text-2xl mb-2">{produto.name}</CardTitle>
-                      <p className="text-muted-foreground">{produto.comertial_name}</p>
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="text-xl md:text-2xl mb-2 break-words">{produto.name}</CardTitle>
+                      <p className="text-muted-foreground text-sm break-words">{produto.comertial_name}</p>
 
                     </div>
                   </div>
@@ -364,10 +364,10 @@ const getImageUrl = (imagePath: string | null) => {
             {/* Lotes relacionados */}
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <CardTitle>Lotes deste Produto</CardTitle>
                   <Link to={`/lotes/novo?product_id=${produto.id}`}>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="w-full sm:w-auto">
                       Novo Lote
                     </Button>
                   </Link>
@@ -386,24 +386,24 @@ const getImageUrl = (imagePath: string | null) => {
                 ) : (
                   <div className="space-y-3">
                     {lotes.map((lote) => (
-                      <div key={lote.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div>
-                          <p className="font-medium">{lote.code}</p>
+                      <div key={lote.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium break-words">{lote.code}</p>
                           <p className="text-sm text-muted-foreground">
                             Produção: {Number(lote.producao).toFixed(2) || 0} kg
                           </p>
                           {lote.talhao && (
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground break-words">
                               Talhão: {lote.talhao}
                             </p>
                           )}
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
                           <Badge variant={lote.status ? "default" : "secondary"}>
                             {getBatchStatus(lote)}
                           </Badge>
                           <Link to={`/lotes/${lote.id}`}>
-                            <Button variant="outline" size="sm">Ver Lote</Button>
+                            <Button variant="outline" size="sm" className="w-full sm:w-auto">Ver Lote</Button>
                           </Link>
                         </div>
                       </div>
@@ -415,40 +415,40 @@ const getImageUrl = (imagePath: string | null) => {
           </div>
 
           {/* Informações técnicas */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Informações Técnicas</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <Hash className="h-5 w-5 text-muted-foreground" />
-                  <div>
+                  <Hash className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  <div className="min-w-0">
                     <p className="text-sm text-muted-foreground">Código</p>
-                    <p className="font-mono font-medium">{produto.code}</p>
+                    <p className="font-mono font-medium break-all">{produto.code}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Tag className="h-5 w-5 text-muted-foreground" />
-                  <div>
+                  <Tag className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  <div className="min-w-0">
                     <p className="text-sm text-muted-foreground">Variedade/Cultivar</p>
-                    <p className="font-medium">
+                    <p className="font-medium break-words">
                       {produto.variedade_cultivar || "Não informado"}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
-                  <div>
+                  <Calendar className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  <div className="min-w-0">
                     <p className="text-sm text-muted-foreground">Data de Cadastro</p>
-                    <p className="font-medium">
+                    <p className="font-medium break-words">
                       {new Date(produto.created_at).toLocaleDateString("pt-BR")}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
-                  <div>
+                  <Calendar className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  <div className="min-w-0">
                     <p className="text-sm text-muted-foreground">Última Atualização</p>
                     <p className="font-medium">
                       {new Date(produto.updated_at).toLocaleDateString("pt-BR")}

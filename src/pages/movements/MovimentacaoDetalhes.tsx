@@ -145,30 +145,30 @@ const MovimentacaoDetalhes = () => {
           </Button>
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Informações principais */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <ArrowRightLeft className="h-8 w-8 text-primary" />
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <div className="flex items-start gap-3 md:gap-4">
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <ArrowRightLeft className="h-6 w-6 md:h-8 md:w-8 text-primary" />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <CardTitle className="text-2xl">Movimentação #{movimentacao.id}</CardTitle>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <CardTitle className="text-xl md:text-2xl break-words">Movimentação #{movimentacao.id}</CardTitle>
                         <Badge className={getTipoColor(movimentacao.tipo_movimentacao)}>{movimentacao.tipo_movimentacao}</Badge>
                       </div>
-                      <Link to={`/lotes/${movimentacao.batch_id}`} className="text-primary hover:underline">
+                      <Link to={`/lotes/${movimentacao.batch_id}`} className="text-primary hover:underline text-sm md:text-base break-words">
                         Lote #{movimentacao.batch_id}
                       </Link>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap sm:flex-nowrap">
                     <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" onClick={handleEdit}>
+                        <Button variant="outline" size="sm" onClick={handleEdit} className="flex-1 sm:flex-none">
                           <Pencil className="h-4 w-4 mr-2" />
                           Editar
                         </Button>
@@ -237,7 +237,7 @@ const MovimentacaoDetalhes = () => {
                     </Dialog>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm">
+                        <Button variant="destructive" size="sm" className="flex-1 sm:flex-none">
                           <Trash2 className="h-4 w-4 mr-2" />
                           Excluir
                         </Button>
@@ -261,19 +261,19 @@ const MovimentacaoDetalhes = () => {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex items-center gap-3">
-                    <Package className="h-5 w-5 text-muted-foreground" />
-                    <div>
+                    <Package className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <div className="min-w-0">
                       <p className="text-sm text-muted-foreground">Quantidade</p>
-                      <p className="font-semibold text-lg">{Number(movimentacao.quantidade).toFixed(2)} kg</p>
+                      <p className="font-semibold text-base md:text-lg break-words">{Number(movimentacao.quantidade).toFixed(2)} kg</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <MapPin className="h-5 w-5 text-muted-foreground" />
-                    <div>
+                    <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <div className="min-w-0">
                       <p className="text-sm text-muted-foreground">Localização</p>
-                      <p className="font-medium">{movimentacao.localizacao || "Não informado"}</p>
+                      <p className="font-medium break-words">{movimentacao.localizacao || "Não informado"}</p>
                     </div>
                   </div>
                 </div>
@@ -292,24 +292,24 @@ const MovimentacaoDetalhes = () => {
           </div>
 
           {/* Informações técnicas */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Informações da Movimentação</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
-                  <div>
+                  <Calendar className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  <div className="min-w-0">
                     <p className="text-sm text-muted-foreground">Data de Criação</p>
-                    <p className="font-medium">
+                    <p className="font-medium break-words">
                       {new Date(movimentacao.created_at).toLocaleDateString("pt-BR")}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <FileText className="h-5 w-5 text-muted-foreground" />
-                  <div>
+                  <FileText className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  <div className="min-w-0">
                     <p className="text-sm text-muted-foreground">Tipo de Operação</p>
                     <Badge className={getTipoColor(movimentacao.tipo_movimentacao)}>{movimentacao.tipo_movimentacao}</Badge>
                   </div>

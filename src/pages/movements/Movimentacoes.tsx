@@ -52,13 +52,13 @@ const Movimentacoes = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Movimentações</h1>
-            <p className="text-muted-foreground">Histórico de movimentações dos lotes</p>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8">
+          <div className="min-w-0">
+            <h1 className="text-2xl md:text-3xl font-bold mb-2 break-words">Movimentações</h1>
+            <p className="text-muted-foreground text-sm md:text-base">Histórico de movimentações dos lotes</p>
           </div>
-          <Link to="/movimentacoes/nova">
-            <Button>
+          <Link to="/movimentacoes/nova" className="w-full sm:w-auto">
+            <Button className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               Nova Movimentação
             </Button>
@@ -84,39 +84,41 @@ const Movimentacoes = () => {
             <p className="text-muted-foreground">Carregando movimentações...</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {filteredMovimentacoes.map((mov) => (
             <Card key={mov.id} className="shadow-soft hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <ArrowRightLeft className="h-6 w-6 text-primary" />
+              <CardContent className="p-4 md:p-6">
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-start gap-3 md:gap-4">
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <ArrowRightLeft className="h-5 w-5 md:h-6 md:w-6 text-primary" />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold">Lote ID: {mov.batch_id}</h3>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-sm md:text-base break-words">Lote ID: {mov.batch_id}</h3>
                         <Badge className={getTipoColor(mov.tipo_movimentacao)}>{mov.tipo_movimentacao}</Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs md:text-sm text-muted-foreground">
                         Usuário ID: {mov.user_id}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-6">
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Quantidade</p>
-                      <p className="font-semibold">{Number(mov.quantidade).toFixed(2)} kg</p>
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t">
+                    <div className="flex gap-4 sm:gap-6">
+                      <div>
+                        <p className="text-xs md:text-sm text-muted-foreground">Quantidade</p>
+                        <p className="font-semibold text-sm md:text-base">{Number(mov.quantidade).toFixed(2)} kg</p>
+                      </div>
+                      <div>
+                        <p className="text-xs md:text-sm text-muted-foreground">Data</p>
+                        <p className="font-semibold text-sm md:text-base">
+                          {new Date(mov.created_at).toLocaleDateString("pt-BR")}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Data</p>
-                      <p className="font-semibold">
-                        {new Date(mov.created_at).toLocaleDateString("pt-BR")}
-                      </p>
-                    </div>
-                    <Link to={`/movimentacoes/${mov.id}`}>
-                      <Button variant="outline" size="sm">
+                    <Link to={`/movimentacoes/${mov.id}`} className="w-full sm:w-auto">
+                      <Button variant="outline" size="sm" className="w-full sm:w-auto">
                         Detalhes
                       </Button>
                     </Link>

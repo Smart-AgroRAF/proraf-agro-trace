@@ -454,7 +454,7 @@ const LoteDetalhes = () => {
                             />
                           </div>
                          
-                          <div>
+                          {/* <div>
                             <Label htmlFor="dt_expedition">Data de Expedição</Label>
                             <Input
                               id="dt_expedition"
@@ -468,10 +468,10 @@ const LoteDetalhes = () => {
                             <Input
                               id="producao"
                               type="number"
-                              value={editForm.producao}
+                              // value={editForm.producao}
                               onChange={(e) => setEditForm({ ...editForm, producao: Number(e.target.value) })}
                             />
-                          </div>
+                          </div> */}
                           <Button type="submit" disabled={updateLoading} className="w-full">
                             {updateLoading ? "Salvando..." : "Salvar"}
                           </Button>

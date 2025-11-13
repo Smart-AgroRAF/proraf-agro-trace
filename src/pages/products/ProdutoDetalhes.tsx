@@ -29,11 +29,9 @@ const ProdutoDetalhes = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
-
   const [imageError, setImageError] = useState(false);
-          {console.log(produto)}
   
-const getImageUrl = (imagePath: string | null) => {
+  const getImageUrl = (imagePath: string | null) => {
     if (!imagePath) return null;
     
     // Se já é uma URL completa, retorna como está
@@ -80,6 +78,9 @@ const getImageUrl = (imagePath: string | null) => {
         setLotes(batchesData);
         
         // Initialize edit form with current data
+        if(productData.image == null){
+          productData.image = "";
+        }
         setEditForm({
           name: productData.name,
           comertial_name: productData.comertial_name || "",
@@ -261,11 +262,13 @@ const getImageUrl = (imagePath: string | null) => {
                   <div>
                     <Label htmlFor="image">URL da Imagem</Label>
                     <Input
+                      type="file"
                       id="image"
-                      value={editForm.image}
-                      onChange={(e) => setEditForm({ ...editForm, image: e.target.value })}
-                      placeholder="https://..."
-                    />
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                      }}
+                />
                   </div>
                   <div className="flex items-center space-x-2">
                     <Switch
@@ -390,7 +393,7 @@ const getImageUrl = (imagePath: string | null) => {
                         <div className="min-w-0 flex-1">
                           <p className="font-medium break-words">{lote.code}</p>
                           <p className="text-sm text-muted-foreground">
-                            Produção: {Number(lote.producao).toFixed(2) || 0} kg
+                            Produção: {Number(lote.producao).toFixed(2) || 0} {lote.unidadeMedida || 'kg'}
                           </p>
                           {lote.talhao && (
                             <p className="text-sm text-muted-foreground break-words">
@@ -475,15 +478,58 @@ const getImageUrl = (imagePath: string | null) => {
                     </p>
                     <p className="text-sm text-muted-foreground">Lotes Ativos</p>
                   </div>
-                  <div className="text-center p-4 bg-muted/50 rounded-lg">
-                    <p className="text-2xl font-bold text-yellow-600">
-                      {lotes.map(
-                        l => l.producao ? Number(l.producao) : 0
-                      ).reduce((a, b) => a + b, 0).toFixed(2)} kg
-                    </p>
-                    <p className="text-sm text-muted-foreground">Produção Total</p>
-                  </div>
-                  <div className="text-center p-4 bg-muted/50 rounded-lg">
+                  
+                  {/* Produção Total - Agrupar por Unidade de Medida */}
+                  {(() => {
+                    // Agrupar produção por unidade de medida
+                    const producaoPorUnidade = lotes.reduce((acc, lote) => {
+                      const unidade = lote.unidadeMedida || 'kg';
+                      const producao = lote.producao ? Number(lote.producao) : 0;
+                      
+                      if (!acc[unidade]) {
+                        acc[unidade] = 0;
+                      }
+                      acc[unidade] += producao;
+                      
+                      return acc;
+                    }, {} as Record<string, number>);
+                    
+                    const unidades = Object.keys(producaoPorUnidade);
+                    
+                    // Se só tem uma unidade ou nenhuma produção
+                    if (unidades.length <= 1) {
+                      const unidade = unidades[0] || 'kg';
+                      const total = producaoPorUnidade[unidade] || 0;
+                      
+                      return (
+                        <div className="text-center p-4 bg-muted/50 rounded-lg col-span-2">
+                          <p className="text-2xl font-bold text-yellow-600">
+                            {total.toFixed(2)} {unidade}
+                          </p>
+                          <p className="text-sm text-muted-foreground">Produção Total</p>
+                        </div>
+                      );
+                    }
+                    
+                    // Se tem múltiplas unidades, mostrar separadamente
+                    return (
+                      <div className="col-span-2 p-4 bg-muted/50 rounded-lg">
+                        <p className="text-sm text-muted-foreground text-center mb-3">Produção Total</p>
+                        <div className="space-y-2">
+                          {Object.entries(producaoPorUnidade).map(([unidade, total]) => (
+                            <div key={unidade} className="flex justify-between items-center">
+                              <span className="text-sm text-muted-foreground">{unidade}:</span>
+                              <span className="text-lg font-bold text-yellow-600">
+                                {total.toFixed(2)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  
+                  <div className="text-center p-4 bg-muted/50 rounded-lg col-span-2">
                     <p className="text-2xl font-bold text-blue-600">
                       {lotes.filter(l => l.dt_expedition).length}
                     </p>

@@ -6,10 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { MapPin, FileText, Plus, Edit, Loader2, Crown } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Switch } from "@/components/ui/switch";
+import { MapPin, FileText, Plus, Edit, Loader2, Crown, Trash2 } from "lucide-react";
 import { getCurrentUser, updateCurrentUser } from "@/api/user";
 import type { User } from "@/api/types";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  createFieldData, 
+  listFieldData, 
+  updateFieldData, 
+  deleteFieldData,
+  type FieldData,
+  type FieldDataCreate 
+} from "@/api/fieldData";
 
 // import { useAuth } from "@/context/AuthContext";
 
@@ -19,8 +29,14 @@ export default function Perfil() {
   // const { refreshUser } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditFieldModalOpen, setIsEditFieldModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingFields, setIsLoadingFields] = useState(true);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [isSavingField, setIsSavingField] = useState(false);
+  const [fieldToDelete, setFieldToDelete] = useState<number | null>(null);
+  const [fieldToEdit, setFieldToEdit] = useState<FieldData | null>(null);
   const [userData, setUserData] = useState<User | null>(null);
   const { toast } = useToast();
 
@@ -79,27 +95,27 @@ export default function Perfil() {
     telefone: "",
   });
 
-  // Dados mockados dos campos
-  const [campos, setCampos] = useState([
-    {
-      id: 1,
-      latitude: "-23.5505",
-      longitude: "-46.6333",
-      observacoes: "Campo principal de cultivo de hortaliças",
-      created_at: "2024-01-15",
-    },
-    {
-      id: 2,
-      latitude: "-23.5520",
-      longitude: "-46.6350",
-      observacoes: "Área de cultivo orgânico certificado",
-      created_at: "2024-02-20",
-    },
-  ]);
+  // Estado para campos dinâmicos da API
+  const [campos, setCampos] = useState<FieldData[]>([]);
+  const [totalCampos, setTotalCampos] = useState(0);
 
-  const [novoCampo, setNovoCampo] = useState({
+  const [novoCampo, setNovoCampo] = useState<FieldDataCreate>({
     latitude: "",
     longitude: "",
+    mapa: "",
+    imagem_aerea: "",
+    imagem_perfil: "",
+    imagem_fundo: "",
+    observacoes: "",
+  });
+
+  const [editingCampo, setEditingCampo] = useState<FieldDataCreate>({
+    latitude: "",
+    longitude: "",
+    mapa: "",
+    imagem_aerea: "",
+    imagem_perfil: "",
+    imagem_fundo: "",
     observacoes: "",
   });
 
@@ -128,6 +144,29 @@ export default function Perfil() {
 
     fetchUserData();
   }, []);
+
+  // Carrega campos dinâmicos
+  useEffect(() => {
+    loadFieldData();
+  }, []);
+
+  const loadFieldData = async () => {
+    try {
+      setIsLoadingFields(true);
+      const response = await listFieldData(0, 100); // Carrega até 100 campos
+      setCampos(response.items);
+      setTotalCampos(response.total);
+    } catch (error) {
+      console.error("Erro ao carregar campos:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar campos dinâmicos",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingFields(false);
+    }
+  };
 
   const handleEditProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -204,31 +243,118 @@ export default function Perfil() {
     }
   };
 
-  const handleAddCampo = (e: React.FormEvent) => {
+  const handleAddCampo = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!novoCampo.latitude || !novoCampo.longitude) {
+    if (!novoCampo.latitude?.trim() && !novoCampo.longitude?.trim() && !novoCampo.observacoes?.trim()) {
       toast({
         title: "Erro",
-        description: "Preencha latitude e longitude",
+        description: "Preencha pelo menos um campo",
         variant: "destructive",
       });
       return;
     }
 
-    const campo = {
-      id: campos.length + 1,
-      ...novoCampo,
-      created_at: new Date().toISOString().split('T')[0],
-    };
+    try {
+      setIsSavingField(true);
+      const createdField = await createFieldData(novoCampo);
+      setCampos([...campos, createdField]);
+      setTotalCampos(totalCampos + 1);
+      setNovoCampo({ 
+        latitude: "",
+        longitude: "",
+        mapa: "",
+        imagem_aerea: "",
+        imagem_perfil: "",
+        imagem_fundo: "",
+        observacoes: "",
+      });
+      setIsModalOpen(false);
+      toast({
+        title: "Sucesso!",
+        description: "Campo adicionado com sucesso!",
+      });
+    } catch (error) {
+      console.error("Erro ao criar campo:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao adicionar campo",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingField(false);
+    }
+  };
 
-    setCampos([...campos, campo]);
-    setNovoCampo({ latitude: "", longitude: "", observacoes: "" });
-    setIsModalOpen(false);
-    toast({
-      title: "Sucesso!",
-      description: "Campo adicionado com sucesso!",
+  const handleEditCampo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!fieldToEdit) {
+      return;
+    }
+
+    try {
+      setIsSavingField(true);
+      const updatedField = await updateFieldData(fieldToEdit.id, editingCampo);
+      setCampos(campos.map(c => c.id === fieldToEdit.id ? updatedField : c));
+      setIsEditFieldModalOpen(false);
+      setFieldToEdit(null);
+      toast({
+        title: "Sucesso!",
+        description: "Campo atualizado com sucesso!",
+      });
+    } catch (error) {
+      console.error("Erro ao atualizar campo:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar campo",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingField(false);
+    }
+  };
+
+  const confirmDeleteCampo = async () => {
+    if (!fieldToDelete) return;
+
+    try {
+      await deleteFieldData(fieldToDelete);
+      setCampos(campos.filter(c => c.id !== fieldToDelete));
+      setTotalCampos(totalCampos - 1);
+      setIsDeleteDialogOpen(false);
+      setFieldToDelete(null);
+      toast({
+        title: "Sucesso!",
+        description: "Campo deletado com sucesso!",
+      });
+    } catch (error) {
+      console.error("Erro ao deletar campo:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao deletar campo",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const openEditModal = (campo: FieldData) => {
+    setFieldToEdit(campo);
+    setEditingCampo({
+      latitude: campo.latitude || "",
+      longitude: campo.longitude || "",
+      mapa: campo.mapa || "",
+      imagem_aerea: campo.imagem_aerea || "",
+      imagem_perfil: campo.imagem_perfil || "",
+      imagem_fundo: campo.imagem_fundo || "",
+      observacoes: campo.observacoes || "",
     });
+    setIsEditFieldModalOpen(true);
+  };
+
+  const openDeleteDialog = (campoId: number) => {
+    setFieldToDelete(campoId);
+    setIsDeleteDialogOpen(true);
   };
 
   if (isLoading) {
@@ -406,7 +532,7 @@ export default function Perfil() {
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-2xl">Meus Campos</CardTitle>
-                <CardDescription>Gerencie as informações dos seus campos</CardDescription>
+                <CardDescription>Gerencie as informações geográficas e imagens dos seus campos</CardDescription>
               </div>
               <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogTrigger asChild>
@@ -419,36 +545,74 @@ export default function Perfil() {
                   <DialogHeader>
                     <DialogTitle>Adicionar Novo Campo</DialogTitle>
                     <DialogDescription>
-                      Insira as informações do campo que deseja cadastrar
+                      Crie um campo personalizado para armazenar informações específicas
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleAddCampo} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="latitude">Latitude *</Label>
+                        <Label htmlFor="latitude">Latitude</Label>
                         <Input
                           id="latitude"
-                          placeholder="-23.5505"
+                          placeholder="-29.123456"
                           value={novoCampo.latitude}
                           onChange={(e) => setNovoCampo({...novoCampo, latitude: e.target.value})}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="longitude">Longitude *</Label>
+                        <Label htmlFor="longitude">Longitude</Label>
                         <Input
                           id="longitude"
-                          placeholder="-46.6333"
+                          placeholder="-53.123456"
                           value={novoCampo.longitude}
                           onChange={(e) => setNovoCampo({...novoCampo, longitude: e.target.value})}
                         />
                       </div>
                     </div>
+                    {/* <div className="space-y-2">
+                      <Label htmlFor="mapa">URL do Mapa</Label>
+                      <Input
+                        type="file"
+                        id="mapa"
+                        placeholder="https://exemplo.com/mapa.jpg"
+                        value={novoCampo.mapa}
+                        onChange={(e) => setNovoCampo({...novoCampo, mapa: e.target.value})}
+                      />
+        
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="imagem_aerea">URL Imagem Aérea</Label>
+                      <Input
+                        id="imagem_aerea"
+                        placeholder="https://exemplo.com/aerea.jpg"
+                        value={novoCampo.imagem_aerea}
+                        onChange={(e) => setNovoCampo({...novoCampo, imagem_aerea: e.target.value})}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="imagem_perfil">URL Imagem Perfil</Label>
+                      <Input
+                        id="imagem_perfil"
+                        placeholder="https://exemplo.com/perfil.jpg"
+                        value={novoCampo.imagem_perfil}
+                        onChange={(e) => setNovoCampo({...novoCampo, imagem_perfil: e.target.value})}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="imagem_fundo">URL Imagem Fundo</Label>
+                      <Input
+                        id="imagem_fundo"
+                        placeholder="https://exemplo.com/fundo.jpg"
+                        value={novoCampo.imagem_fundo}
+                        onChange={(e) => setNovoCampo({...novoCampo, imagem_fundo: e.target.value})}
+                      />
+                    </div> */}
                     <div className="space-y-2">
                       <Label htmlFor="observacoes">Observações</Label>
                       <Textarea
                         id="observacoes"
                         placeholder="Descreva características do campo..."
-                        rows={4}
+                        rows={3}
                         value={novoCampo.observacoes}
                         onChange={(e) => setNovoCampo({...novoCampo, observacoes: e.target.value})}
                       />
@@ -457,8 +621,8 @@ export default function Perfil() {
                       <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
                         Cancelar
                       </Button>
-                      <Button type="submit" className="bg-primary hover:bg-primary/90">
-                        Adicionar Campo
+                      <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={isSavingField}>
+                        {isSavingField ? "Salvando..." : "Adicionar Campo"}
                       </Button>
                     </div>
                   </form>
@@ -466,9 +630,14 @@ export default function Perfil() {
               </Dialog>
             </CardHeader>
             <CardContent>
-              {campos.length === 0 ? (
+              {isLoadingFields ? (
                 <div className="text-center py-12">
-                  <MapPin className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+                  <p className="mt-4 text-muted-foreground">Carregando campos...</p>
+                </div>
+              ) : campos.length === 0 ? (
+                <div className="text-center py-12">
+                  <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
                   <h3 className="mt-4 text-lg font-semibold">Nenhum campo cadastrado</h3>
                   <p className="text-muted-foreground">Adicione seu primeiro campo clicando no botão acima</p>
                 </div>
@@ -476,33 +645,68 @@ export default function Perfil() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {campos.map((campo) => (
                     <Card key={campo.id} className="border-2">
-                      <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <MapPin className="h-5 w-5 text-primary" />
-                          Campo #{campo.id}
-                        </CardTitle>
-                        <CardDescription>
-                          Cadastrado em {new Date(campo.created_at).toLocaleDateString('pt-BR')}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="flex items-start gap-2">
-                          <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                          <div>
-                            <p className="text-sm font-medium">Coordenadas</p>
-                            <p className="text-sm text-muted-foreground">
-                              {campo.latitude}, {campo.longitude}
-                            </p>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <CardTitle className="text-lg flex items-center gap-2">
+                              <MapPin className="h-5 w-5 text-primary" />
+                              Campo #{campo.id}
+                            </CardTitle>
+                            <CardDescription className="mt-1">
+                              Criado em {new Date(campo.created_at).toLocaleDateString('pt-BR')}
+                            </CardDescription>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => openEditModal(campo)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => openDeleteDialog(campo.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        {(campo.latitude || campo.longitude) && (
+                          <div className="flex items-start gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">Coordenadas</p>
+                              <p className="text-sm text-muted-foreground">
+                                {campo.latitude || 'N/A'}, {campo.longitude || 'N/A'}
+                              </p>
+                            </div>
+                          </div>
+                        )}
                         {campo.observacoes && (
                           <div className="flex items-start gap-2">
-                            <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
-                            <div>
+                            <FileText className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
                               <p className="text-sm font-medium">Observações</p>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-sm text-muted-foreground break-words">
                                 {campo.observacoes}
                               </p>
+                            </div>
+                          </div>
+                        )}
+                        {(campo.mapa || campo.imagem_aerea || campo.imagem_perfil || campo.imagem_fundo) && (
+                          <div className="pt-2 border-t">
+                            <p className="text-xs font-medium text-muted-foreground mb-2">Imagens anexadas:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {campo.mapa && <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">Mapa</span>}
+                              {campo.imagem_aerea && <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">Aérea</span>}
+                              {campo.imagem_perfil && <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">Perfil</span>}
+                              {campo.imagem_fundo && <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">Fundo</span>}
                             </div>
                           </div>
                         )}
@@ -513,6 +717,115 @@ export default function Perfil() {
               )}
             </CardContent>
           </Card>
+
+          {/* Dialog de Edição de Campo */}
+          <Dialog open={isEditFieldModalOpen} onOpenChange={setIsEditFieldModalOpen}>
+            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Editar Campo</DialogTitle>
+                <DialogDescription>
+                  Atualize as informações do campo
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleEditCampo} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-latitude">Latitude</Label>
+                    <Input
+                      id="edit-latitude"
+                      placeholder="-29.123456"
+                      value={editingCampo.latitude}
+                      onChange={(e) => setEditingCampo({...editingCampo, latitude: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-longitude">Longitude</Label>
+                    <Input
+                      id="edit-longitude"
+                      placeholder="-53.123456"
+                      value={editingCampo.longitude}
+                      onChange={(e) => setEditingCampo({...editingCampo, longitude: e.target.value})}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-mapa">URL do Mapa</Label>
+                  <Input
+                    id="edit-mapa"
+                    placeholder="https://exemplo.com/mapa.jpg"
+                    value={editingCampo.mapa}
+                    onChange={(e) => setEditingCampo({...editingCampo, mapa: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-imagem_aerea">URL Imagem Aérea</Label>
+                  <Input
+                    id="edit-imagem_aerea"
+                    placeholder="https://exemplo.com/aerea.jpg"
+                    value={editingCampo.imagem_aerea}
+                    onChange={(e) => setEditingCampo({...editingCampo, imagem_aerea: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-imagem_perfil">URL Imagem Perfil</Label>
+                  <Input
+                    id="edit-imagem_perfil"
+                    placeholder="https://exemplo.com/perfil.jpg"
+                    value={editingCampo.imagem_perfil}
+                    onChange={(e) => setEditingCampo({...editingCampo, imagem_perfil: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-imagem_fundo">URL Imagem Fundo</Label>
+                  <Input
+                    id="edit-imagem_fundo"
+                    placeholder="https://exemplo.com/fundo.jpg"
+                    value={editingCampo.imagem_fundo}
+                    onChange={(e) => setEditingCampo({...editingCampo, imagem_fundo: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-observacoes">Observações</Label>
+                  <Textarea
+                    id="edit-observacoes"
+                    placeholder="Descreva características do campo..."
+                    rows={3}
+                    value={editingCampo.observacoes}
+                    onChange={(e) => setEditingCampo({...editingCampo, observacoes: e.target.value})}
+                  />
+                </div>
+                <div className="flex justify-end gap-3">
+                  <Button type="button" variant="outline" onClick={() => setIsEditFieldModalOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={isSavingField}>
+                    {isSavingField ? "Salvando..." : "Salvar Alterações"}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+
+          {/* Dialog de Confirmação de Exclusão */}
+          <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Tem certeza que deseja excluir este campo? Esta ação não pode ser desfeita.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={confirmDeleteCampo}
+                  className="bg-destructive hover:bg-destructive/90"
+                >
+                  Excluir
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </main>
     </div>

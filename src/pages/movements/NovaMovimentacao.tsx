@@ -17,6 +17,7 @@ const NovaMovimentacao = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [lotes, setLotes] = useState<Batch[]>([]);
+  const [selectedLote, setSelectedLote] = useState<Batch | null>(null);
   const [formData, setFormData] = useState({
     lote_id: "",
     tipo: "",
@@ -46,13 +47,36 @@ const NovaMovimentacao = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validar quantidade antes de enviar
+    const quantidadeMovimentada = parseFloat(formData.quantidade);
+    
+    if (!selectedLote) {
+      toast.error("Selecione um lote antes de continuar");
+      return;
+    }
+    
+    if (isNaN(quantidadeMovimentada) || quantidadeMovimentada <= 0) {
+      toast.error("A quantidade deve ser maior que zero");
+      return;
+    }
+    
+    const producaoDisponivel = selectedLote.producao ? Number(selectedLote.producao) : 0;
+    
+    if (quantidadeMovimentada > producaoDisponivel) {
+      toast.error(
+        `A quantidade movimentada (${quantidadeMovimentada.toFixed(2)} ${selectedLote.unidadeMedida || 'kg'}) não pode ser maior que a produção disponível (${producaoDisponivel.toFixed(2)} ${selectedLote.unidadeMedida || 'kg'})`
+      );
+      return;
+    }
+    
     setLoading(true);
 
     try {
       const movementData: MovementCreate = {
         batch_id: parseInt(formData.lote_id),
         tipo_movimentacao: formData.tipo,
-        quantidade: parseFloat(formData.quantidade),
+        quantidade: quantidadeMovimentada,
       };
 
       await createMovement(movementData);
@@ -87,7 +111,11 @@ const NovaMovimentacao = () => {
                 <Label htmlFor="lote">Lote *</Label>
                 <Select
                   value={formData.lote_id}
-                  onValueChange={(value) => setFormData({ ...formData, lote_id: value })}
+                  onValueChange={(value) => {
+                    const lote = lotes.find(l => l.id.toString() === value);
+                    setSelectedLote(lote || null);
+                    setFormData({ ...formData, lote_id: value });
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione um lote" />
@@ -95,11 +123,18 @@ const NovaMovimentacao = () => {
                   <SelectContent>
                     {lotes.map((lote) => (
                       <SelectItem key={lote.id} value={lote.id.toString()}>
-                        {lote.code}
+                        {lote.code} - {Number(lote.producao || 0).toFixed(2)} {lote.unidadeMedida || 'kg'} disponível
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {selectedLote && (
+                  <p className="text-sm text-muted-foreground">
+                    Produção disponível: <span className="font-semibold text-foreground">
+                      {Number(selectedLote.producao || 0).toFixed(2)} {selectedLote.unidadeMedida || 'kg'}
+                    </span>
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -122,15 +157,26 @@ const NovaMovimentacao = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="quantidade">Quantidade (kg) *</Label>
+                <Label htmlFor="quantidade">
+                  Quantidade ({selectedLote?.unidadeMedida || 'kg'}) *
+                </Label>
                 <Input
                   id="quantidade"
                   type="number"
-                  placeholder="Ex: 1000"
+                  step="0.01"
+                  min="0.01"
+                  max={selectedLote?.producao ? Number(selectedLote.producao) : undefined}
+                  placeholder={selectedLote ? `Máximo: ${Number(selectedLote.producao || 0).toFixed(2)}` : "Ex: 1000"}
                   value={formData.quantidade}
                   onChange={(e) => setFormData({ ...formData, quantidade: e.target.value })}
                   required
+                  disabled={!selectedLote}
                 />
+                {formData.quantidade && selectedLote && parseFloat(formData.quantidade) > Number(selectedLote.producao || 0) && (
+                  <p className="text-sm text-red-500">
+                    ⚠️ A quantidade não pode ser maior que {Number(selectedLote.producao || 0).toFixed(2)} {selectedLote.unidadeMedida || 'kg'}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">

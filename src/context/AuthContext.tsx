@@ -75,18 +75,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (credentials: LoginRequest) => {
     try {
+      console.log('Iniciando login...');
+      setIsLoading(true);
+      
       await apiLogin(credentials);
+      
       // Busca dados do usuário após login
+      console.log('Login bem-sucedido, carregando dados do usuário...');
       const userData = await getCurrentUser();
+      console.log('Dados do usuário carregados:', userData);
+      
       setUser(userData);
     } catch (error) {
+      console.error('Erro no login:', error);
+      setUser(null);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const logout = () => {
+    console.log('Executando logout no AuthContext...');
     apiLogout();
     setUser(null);
+    setIsLoading(false);
+    console.log('Logout concluído - Estado limpo');
   };
 
   const updateUser = (updatedUser: User) => {

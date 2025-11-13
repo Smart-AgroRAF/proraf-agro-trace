@@ -21,19 +21,6 @@ import type { User } from "@/api/types";
 export const NavbarLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const user = await getCurrentUser();
-        setCurrentUser(user);
-      } catch (error: any) {
-        console.log("Erro ao obter dados do usuário");
-      }
-    };
-
-    fetchCurrentUser();
-  }, []);
 
   // Tentar usar o contexto com fallback de erro
   let user: User | null = null;
@@ -56,30 +43,55 @@ export const NavbarLogin = () => {
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showCpfCnpjModal, setShowCpfCnpjModal] = useState(false);
-  
-  // Função para verificar se precisa mostrar modal
-  const shouldShowModal = isAuthenticated && user && !user.cpf && !user.cnpj;
   const [documentType, setDocumentType] = useState<"cpf" | "cnpj">("cpf");
   const [documentValue, setDocumentValue] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    
+    // Aguardar o carregamento dos dados do usuário antes de verificar
+    if (isLoading) {
+      console.log("Aguardando carregamento dos dados do usuário...");
+      return;
+    }
+
     // Verificar se o usuário está autenticado mas não tem CPF/CNPJ
-    if (shouldShowModal) {
-      console.log("Usuário autenticado sem CPF/CNPJ - Abrindo modal");
-      setShowCpfCnpjModal(true);
-    } else if (user && (user.cpf || user.cnpj)) {
-      console.log("Usuário já possui CPF/CNPJ cadastrado");
+    if (isAuthenticated && user) {
+      const needsDocument = !user.cpf && !user.cnpj;
+      console.log("Verificação de documento:", { 
+        cpf: user.cpf, 
+        cnpj: user.cnpj, 
+        needsDocument 
+      });
+      
+      if (needsDocument) {
+        console.log("Usuário autenticado sem CPF/CNPJ - Abrindo modal");
+        setShowCpfCnpjModal(true);
+      } else {
+        console.log("Usuário já possui CPF/CNPJ cadastrado");
+        setShowCpfCnpjModal(false);
+      }
+    } else {
       setShowCpfCnpjModal(false);
     }
-  }, [isAuthenticated, user, shouldShowModal]);
+  }, [isAuthenticated, user, isLoading]);
 
 
 
   const handleLogout = () => {
+    console.log("Realizando logout...");
+    
+    // Limpar estado local
+    setShowCpfCnpjModal(false);
+    setDocumentValue("");
+    setDocumentType("cpf");
+    setMobileMenuOpen(false);
+    
+    // Executar logout do contexto
     logout();
-    navigate("/login");
+    
+    // Forçar reload completo da página para limpar todo o estado
+    // Isso garante que não haja resquícios da sessão anterior
+    window.location.href = "/login";
   };
 
   // Função para formatar CPF
@@ -231,19 +243,22 @@ export const NavbarLogin = () => {
         documentType === "cpf" ? "F" : "J"
       );
       
-      console.log("Usuário atualizado:", updatedUser);
+      console.log("Usuário atualizado com sucesso:", updatedUser);
       
-      // Atualizar o usuário no contexto
+      // Atualizar o usuário no contexto - isso vai fazer o modal fechar automaticamente
       updateUser(updatedUser);
-      setShowCpfCnpjModal(false);
       
-      toast({
-        title: "Documento salvo",
-        description: `${documentType.toUpperCase()} cadastrado com sucesso! Agora você pode acessar o sistema.`,
-      });
+      // Fechar modal explicitamente
+      setShowCpfCnpjModal(false);
       
       // Limpar form
       setDocumentValue("");
+      setDocumentType("cpf");
+      
+      toast({
+        title: "Documento salvo",
+        description: `${documentType.toUpperCase()} cadastrado com sucesso!`,
+      });
       
     } catch (error: any) {
       console.error("Erro ao salvar documento:", error);
@@ -371,8 +386,8 @@ export const NavbarLogin = () => {
       </nav>
 
       {/* Modal obrigatório para CPF/CNPJ */}
-      {console.log("showCpfCnpjModal:", showCpfCnpjModal, "shouldShowModal:", shouldShowModal)}
-      <Dialog open={showCpfCnpjModal || shouldShowModal} onOpenChange={() => {}}>
+      {console.log("showCpfCnpjModal:", showCpfCnpjModal, "isLoading:", isLoading)}
+      <Dialog open={showCpfCnpjModal && !isLoading} onOpenChange={() => {}}>
         <DialogContent 
           className="sm:max-w-[425px]"
           onEscapeKeyDown={(e) => e.preventDefault()}

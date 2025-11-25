@@ -4,6 +4,24 @@ FROM node:18-alpine AS builder
 # Set working directory
 WORKDIR /app
 
+# Build arguments for environment variables
+ARG VITE_API_BASE_URL
+ARG VITE_BLOCKCHAIN_API_URL
+ARG VITE_GOOGLE_CLIENT_ID
+ARG VITE_GOOGLE_AUTH_ENABLED
+ARG VITE_API_KEY
+ARG VITE_ENV
+ARG VITE_ERC
+
+# Set environment variables from build args
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_BLOCKCHAIN_API_URL=$VITE_BLOCKCHAIN_API_URL
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+ENV VITE_GOOGLE_AUTH_ENABLED=$VITE_GOOGLE_AUTH_ENABLED
+ENV VITE_API_KEY=$VITE_API_KEY
+ENV VITE_ENV=$VITE_ENV
+ENV VITE_ERC=$VITE_ERC
+
 # Install dependencies (cache layer)
 COPY package.json bun.lockb ./
 RUN npm install -g bun && bun install

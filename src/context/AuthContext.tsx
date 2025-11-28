@@ -71,7 +71,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     loadUser();
-  }, []);
+
+    // Verificar periodicamente se o token expirou (a cada 1 minuto)
+    const tokenCheckInterval = setInterval(() => {
+      const authenticated = isAuthenticated();
+      
+      if (!authenticated && user !== null) {
+        console.warn('Token expirado detectado, fazendo logout...');
+        apiLogout();
+        setUser(null);
+        
+        // Redirecionar para login
+        window.location.href = '/login?expired=true';
+      }
+    }, 60000); // Verificar a cada 1 minuto
+
+    return () => clearInterval(tokenCheckInterval);
+  }, [user]);
 
   const login = async (credentials: LoginRequest) => {
     try {
@@ -97,10 +113,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = () => {
     console.log('Executando logout no AuthContext...');
+    
+    // Limpar token
     apiLogout();
+    
+    // Limpar estado do usuário
     setUser(null);
     setIsLoading(false);
-    console.log('Logout concluído - Estado limpo');
+    
+    // Limpar qualquer outro dado em cache
+    sessionStorage.clear();
+    
+    // Cancelar Google Sign-In se estiver ativo
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.disableAutoSelect();
+    }
+    
+    console.log('Logout concluído - Recarregando página...');
+    
+    // Forçar reload completo da página para limpar cache e estado
+    window.location.href = '/login';
+    window.location.reload();
   };
 
   const updateUser = (updatedUser: User) => {

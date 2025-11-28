@@ -14,7 +14,9 @@ export const Navbar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("proraf_auth");
-    navigate("/login");
+    
+    // Forçar reload completo da página para limpar cache e estado
+    window.location.href = '/login';
   };
 
   return (

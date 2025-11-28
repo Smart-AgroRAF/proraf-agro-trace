@@ -292,7 +292,7 @@ const ProdutoDetalhes = () => {
             </Dialog>
 
             {/* Delete Button */}
-            <AlertDialog>
+            {/* <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" className="flex-1 sm:flex-none">
                   <Trash2 className="h-4 w-4 mr-2" />
@@ -319,7 +319,7 @@ const ProdutoDetalhes = () => {
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
-            </AlertDialog>
+            </AlertDialog> */}
           </div>
         </div>
 

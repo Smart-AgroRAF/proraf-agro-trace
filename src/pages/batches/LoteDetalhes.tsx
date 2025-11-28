@@ -369,11 +369,11 @@ const LoteDetalhes = () => {
                       </DialogContent>
                     </Dialog>
                     <Dialog open={isPrintOpen} onOpenChange={setIsPrintOpen}>
-                      <DialogTrigger asChild>
+                      {/* <DialogTrigger asChild>
                         <Button variant="outline" size="icon" title="Imprimir Etiqueta" className="h-9 w-9">
                           <Printer className="h-4 w-4" />
                         </Button>
-                      </DialogTrigger>
+                      </DialogTrigger> */}
                       <DialogContent className="sm:max-w-[500px]">
                         <DialogHeader>
                           <DialogTitle>Imprimir Etiqueta do Lote</DialogTitle>
@@ -479,11 +479,11 @@ const LoteDetalhes = () => {
                       </DialogContent>
                     </Dialog>
                     <AlertDialog>
-                      <AlertDialogTrigger asChild>
+                      {/* <AlertDialogTrigger asChild>
                         <Button variant="destructive" size="icon" className="h-9 w-9">
                           <Trash2 className="h-4 w-4" />
                         </Button>
-                      </AlertDialogTrigger>
+                      </AlertDialogTrigger> */}
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>Tem certeza?</AlertDialogTitle>

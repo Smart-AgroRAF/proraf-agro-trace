@@ -33,7 +33,6 @@ export default function Perfil() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingFields, setIsLoadingFields] = useState(true);
-  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isSavingField, setIsSavingField] = useState(false);
   const [fieldToDelete, setFieldToDelete] = useState<number | null>(null);
   const [fieldToEdit, setFieldToEdit] = useState<FieldData | null>(null);
@@ -191,55 +190,6 @@ export default function Perfil() {
         description: "Erro ao atualizar perfil",
         variant: "destructive",
       });
-    }
-  };
-  const changeProfileType = async (type: string) => {
-    try {
-      if (!userData) return;
-      
-      setIsUpdatingProfile(true);
-      
-      // Mostrar loading (opcional)
-      toast({
-        title: "Atualizando...",
-        description: "Atualizando tipo de perfil...",
-      });
-      
-      const updatedUser = await updateCurrentUser({
-        tipo_perfil: type,
-      });
-      
-      // Atualizar o estado local
-      setUserData(updatedUser);
-      
-      // Se mudou para Blockchain e MetaMask não está conectado, solicitar conexão
-      if (type === "Blockchain" && !walletAddress) {
-        toast({
-          title: "Perfil atualizado!",
-          description: "Agora conecte sua MetaMask para usar os recursos Pro.",
-        });
-        
-        // Tentar conectar automaticamente após um pequeno delay
-        setTimeout(() => {
-          connectMetaMask();
-        }, 1500);
-      } else {
-        // Mostrar sucesso
-        toast({
-          title: "Sucesso!",
-          description: "Tipo de perfil atualizado com sucesso!",
-        });
-      }
-      
-    } catch (error) {
-      console.error("Erro ao atualizar tipo de perfil:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao atualizar tipo de perfil",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdatingProfile(false);
     }
   };
 
@@ -456,28 +406,6 @@ export default function Perfil() {
                 <div>
                   <Label className="text-muted-foreground">Tipo de Perfil</Label>
                   <p className="text-lg font-medium">{userData.tipo_perfil === "Blockchain" ? "Usuário Pro!" : "Usuário Comum"}</p>
-                  {
-                    userData.tipo_perfil !== "Blockchain" && (
-                      <Button 
-                        className="mt-2 bg-primary hover:bg-primary/90"
-                        onClick={() => changeProfileType('Blockchain')}
-                        disabled={isUpdatingProfile}
-                      >
-                        {isUpdatingProfile ? "Atualizando..." : "Mudar para Usuário Pro!"}
-                      </Button>
-                    )
-                  }
-                  {
-                    userData.tipo_perfil === "Blockchain" && (
-                      <Button 
-                        className="mt-2 bg-primary hover:bg-primary/90"
-                        onClick={() => changeProfileType('user')}
-                        disabled={isUpdatingProfile}
-                      >
-                        {isUpdatingProfile ? "Atualizando..." : "Mudar para Usuário Comum"}
-                      </Button>
-                    )
-                  }
                 </div>
                 {userData.tipo_perfil === "Blockchain" && (
                   <div>
@@ -748,7 +676,7 @@ export default function Perfil() {
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label htmlFor="edit-mapa">URL do Mapa</Label>
                   <Input
                     id="edit-mapa"
@@ -783,7 +711,7 @@ export default function Perfil() {
                     value={editingCampo.imagem_fundo}
                     onChange={(e) => setEditingCampo({...editingCampo, imagem_fundo: e.target.value})}
                   />
-                </div>
+                </div> */}
                 <div className="space-y-2">
                   <Label htmlFor="edit-observacoes">Observações</Label>
                   <Textarea

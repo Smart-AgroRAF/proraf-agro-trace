@@ -22,30 +22,98 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleButtonKey, setGoogleButtonKey] = useState(0);
   
   // Flag para desabilitar Google Auth em caso de problemas
   const isGoogleAuthEnabled = import.meta.env.VITE_GOOGLE_AUTH_ENABLED !== 'false';
 
+  // Verificar se chegou por token expirado
   useEffect(() => {
-    // Inicializa o Google Identity Services apenas se estiver habilitado
-    if (isGoogleAuthEnabled && window.google) {
-      window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "149795163999-vd3lf5uf5u0od7i2msjj0pkp3nlfm217.apps.googleusercontent.com",
-        callback: handleGoogleLogin,
-      });
-
-      window.google.accounts.id.renderButton(
-        document.getElementById("google-signin-button"),
-        { 
-          theme: "outline", 
-          size: "large",
-          width: "100%",
-          text: "signin_with",
-          locale: "pt-BR"
-        }
-      );
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('expired') === 'true') {
+      toast.error('Sua sessão expirou. Por favor, faça login novamente.');
+      // Limpar o parâmetro da URL
+      window.history.replaceState({}, '', '/login');
     }
+    
+    // Forçar reinicialização do botão Google quando a página for carregada/recarregada
+    setGoogleButtonKey(prev => prev + 1);
   }, []);
+
+  useEffect(() => {
+    console.log('Inicializando botão Google, key:', googleButtonKey);
+    
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    const initializeGoogleButton = () => {
+      attempts++;
+      console.log(`Tentativa ${attempts} de inicializar botão Google`);
+      
+      // Verificar se Google API está disponível
+      if (isGoogleAuthEnabled && window.google?.accounts?.id) {
+        try {
+          console.log('Google API disponível, inicializando...');
+          
+          // Limpar qualquer inicialização anterior
+          try {
+            window.google.accounts.id.cancel();
+          } catch (e) {
+            console.log('Sem inicialização anterior para cancelar');
+          }
+          
+          window.google.accounts.id.initialize({
+            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "149795163999-vd3lf5uf5u0od7i2msjj0pkp3nlfm217.apps.googleusercontent.com",
+            callback: handleGoogleLogin,
+          });
+
+          const buttonDiv = document.getElementById("google-signin-button");
+          if (buttonDiv) {
+            console.log('Renderizando botão Google...');
+            // Limpar conteúdo anterior
+            buttonDiv.innerHTML = '';
+            
+            window.google.accounts.id.renderButton(
+              buttonDiv,
+              { 
+                theme: "outline", 
+                size: "large",
+                width: "100%",
+                text: "signin_with",
+                locale: "pt-BR"
+              }
+            );
+            console.log('Botão Google renderizado com sucesso');
+          } else {
+            console.error('Elemento google-signin-button não encontrado no DOM');
+          }
+        } catch (error) {
+          console.error('Erro ao inicializar Google Sign-In:', error);
+        }
+      } else if (attempts < maxAttempts) {
+        // Tentar novamente após um delay
+        console.warn(`Google API ainda não disponível, tentando novamente em 300ms...`);
+        setTimeout(initializeGoogleButton, 300);
+      } else {
+        console.error('Google API não foi carregada após múltiplas tentativas');
+      }
+    };
+    
+    // Iniciar após um pequeno delay
+    const timer = setTimeout(initializeGoogleButton, 200);
+
+    return () => {
+      clearTimeout(timer);
+      // Cleanup do Google Sign-In ao desmontar
+      if (window.google?.accounts?.id) {
+        try {
+          window.google.accounts.id.cancel();
+        } catch (e) {
+          console.log('Erro ao cancelar Google Sign-In no cleanup');
+        }
+      }
+    };
+  }, [isGoogleAuthEnabled, googleButtonKey]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,10 +122,11 @@ const Login = () => {
     try {
       await login({ username: email, password: senha });
       toast.success("Login realizado com sucesso!");
-      navigate("/dashboard");
+      
+      // Forçar reload completo para garantir que todos os dados sejam atualizados
+      window.location.href = '/dashboard';
     } catch (error: any) {
       toast.error(error.message || "Erro ao fazer login");
-    } finally {
       setLoading(false);
     }
   };
@@ -67,7 +136,9 @@ const Login = () => {
       setLoading(true);
       await loginWithGoogle(response.credential);
       toast.success("Login com Google realizado com sucesso!");
-      navigate("/dashboard");
+      
+      // Forçar reload completo para garantir que todos os dados sejam atualizados
+      window.location.href = '/dashboard';
     } catch (error: any) {
       toast.error(error.message || "Erro ao fazer login com Google");
     } finally {
@@ -131,7 +202,7 @@ const Login = () => {
               </div>
 
               {isGoogleAuthEnabled ? (
-                <div id="google-signin-button" className="w-full"></div>
+                <div key={googleButtonKey} id="google-signin-button" className="w-full"></div>
               ) : (
                 <div className="w-full p-3 border rounded-md text-center text-muted-foreground">
                   Google Sign-In temporariamente desabilitado

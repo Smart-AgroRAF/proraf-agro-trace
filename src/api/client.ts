@@ -21,21 +21,57 @@ interface RequestConfig extends RequestInit {
 // Gerenciamento de token
 class TokenManager {
   private static TOKEN_KEY = 'proraf_token';
+  private static TOKEN_EXPIRY_KEY = 'proraf_token_expiry';
 
   static getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    
+    // Verificar se o token expirou
+    if (token && this.isTokenExpired()) {
+      console.warn('Token expirado, removendo...');
+      this.removeToken();
+      return null;
+    }
+    
+    return token;
   }
 
   static setToken(token: string): void {
     localStorage.setItem(this.TOKEN_KEY, token);
+    
+    // Calcular e armazenar tempo de expiração (24 horas a partir de agora)
+    const expiryTime = Date.now() + (24 * 60 * 60 * 1000); // 24 horas
+    localStorage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString());
   }
 
   static removeToken(): void {
     localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.TOKEN_EXPIRY_KEY);
   }
 
   static isAuthenticated(): boolean {
     return !!this.getToken();
+  }
+
+  static isTokenExpired(): boolean {
+    const expiryTime = localStorage.getItem(this.TOKEN_EXPIRY_KEY);
+    
+    if (!expiryTime) {
+      return true; // Se não há tempo de expiração, considerar expirado
+    }
+    
+    return Date.now() > parseInt(expiryTime);
+  }
+
+  static getTokenExpiry(): number | null {
+    const expiryTime = localStorage.getItem(this.TOKEN_EXPIRY_KEY);
+    return expiryTime ? parseInt(expiryTime) : null;
+  }
+
+  static refreshExpiry(): void {
+    // Atualizar o tempo de expiração para mais 24 horas a partir de agora
+    const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
+    localStorage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString());
   }
 }
 
@@ -74,7 +110,25 @@ class ApiClient {
         errorData = { detail: response.statusText };
       }
 
+      // Se for erro 401 (não autorizado), significa que o token expirou
+      if (response.status === 401) {
+        console.error('Token inválido ou expirado, limpando sessão...');
+        TokenManager.removeToken();
+        
+        // Redirecionar para login apenas se não estivermos já na página de login
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login?expired=true';
+        }
+      }
+
       throw new ApiError(response.status, response.statusText, errorData);
+    }
+
+    // Requisição bem-sucedida - renovar tempo de expiração do token
+    // (similar ao comportamento "remember me" - mantém sessão ativa)
+    const currentToken = TokenManager.getToken();
+    if (currentToken) {
+      TokenManager.refreshExpiry();
     }
 
     // Para respostas 204 No Content

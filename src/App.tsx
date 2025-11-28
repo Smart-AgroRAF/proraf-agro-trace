@@ -7,6 +7,7 @@ import { AppRoutes } from "@/router";
 import { AuthProvider } from "@/context/AuthContext";
 import { EthereumProvider } from "@/smartContract/contexts/EthereumContext";
 import { TransactionProvider } from "@/smartContract/contexts/TransactionContext";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 
 const queryClient = new QueryClient();
 
@@ -16,6 +17,7 @@ const App = () => (
       <EthereumProvider>
         <TransactionProvider>
           <TooltipProvider>
+            <GoogleAnalytics />
             <Toaster />
             <Sonner />
             <BrowserRouter>

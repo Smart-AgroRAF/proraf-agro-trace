@@ -30,7 +30,11 @@ RUN npm install -g bun && bun install
 COPY . .
 
 # Build application
-RUN bun run build
+RUN bun run build && \
+    echo "Aguardando finalização do build..." && \
+    sleep 2 && \
+    echo "Verificando Google Analytics:" && \
+    grep -A 3 "Google Analytics" /app/dist/index.html || echo "ERRO: Google Analytics não encontrado!"
 
 # Production stage
 FROM nginx:alpine AS production
